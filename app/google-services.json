@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "805677624326",
+    "firebase_url": "https://place-tracker-d6473.firebaseio.com",
+    "project_id": "place-tracker-d6473",
+    "storage_bucket": "place-tracker-d6473.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805677624326:android:d54cd2b70d60f2f23c2787",
+        "android_client_info": {
+          "package_name": "com.practice.placetracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "805677624326-s0e50ln6u7mplai8kvsfk59k0vl5b2lt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.practice.placetracker",
+            "certificate_hash": "8b22ce37e1902c29ae56da4343dc27af8ad93c41"
+          }
+        },
+        {
+          "client_id": "805677624326-uoct1k8ilgv8379ktspbosgu9h9g1136.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBalZeKaZtrv0F__DfRSV1-3B7iHkNa8S4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "805677624326-uoct1k8ilgv8379ktspbosgu9h9g1136.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
