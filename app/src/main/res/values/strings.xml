@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">Place Tracker</string>
+    <string name="btn_start">Start</string>
+    <string name="btn_stop">Stop</string>
+    <string name="tv_longitude_label">Longitude:</string>
+    <string name="tv_latitude_label">Latitude:</string>
+    <string name="tv_accuracy_label">Accuracy:</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_login">Login</string>
+    <string name="label_registration">Registration</string>
+    <string name="label_login">Login</string>
+    <string name="wrong_email">Email must not be empty and contains "@"</string>
+    <string name="wrong_password">Password must contains 6 or more literals</string>
+    <string name="sign_in_or_registration_error">There is some Error. Try again</string>
+    <string name="registration_success">The registration is success!</string>
+    <string name="permission_denied">Permission is denied. Without it permission the application can`t work.</string>
+    <string name="log_out">log_out</string>
+    <string name="notification_title">Tracker is running</string>
+    <string name="notification_text">Click to open tracker</string>
+
 </resources>
