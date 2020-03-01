@@ -1,35 +1,39 @@
 package com.practice.placetracker.ui.authorization_fragment;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.practice.placetracker.R;
+import com.practice.placetracker.android_utils.ILog;
+import com.practice.placetracker.android_utils.Logger;
+import com.practice.placetracker.ui.FragmentChanger;
 import com.practice.placetracker.ui.location_fragment.LocationFragment;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class AuthorizationFragment extends Fragment implements FragmentContract.BaseView, View.OnClickListener {
+import static com.practice.placetracker.ui.authorization_fragment.FragmentIndication.KEY_INDICATOR;
 
-    public static final String KEY_INDICATOR = "indicator";
-    public static final String KEY_EMAIL = "userEmail";
+public class AuthorizationFragment extends androidx.fragment.app.Fragment implements AuthorizationFragmentContract.View, android.view.View.OnClickListener {
 
+    private final ILog logger = Logger.withTag("MyLog");
 
     private Unbinder unbinder;
+    private ProgressDialog dialog;
 
     @BindView(R.id.etEmail)
     EditText etEmail;
@@ -38,14 +42,14 @@ public class AuthorizationFragment extends Fragment implements FragmentContract.
     @BindView(R.id.btnLogin)
     Button btnLogin;
 
-    private FragmentContract.BasePresenter presenter;
+    private AuthorizationFragmentContract.Presenter presenter;
 
     public AuthorizationFragment() {
     }
 
-    public static AuthorizationFragment newInstance(int indicator) {
+    public static AuthorizationFragment newInstance(int mode) {
         final Bundle b = new Bundle();
-        b.putInt(KEY_INDICATOR, indicator);
+        b.putInt(KEY_INDICATOR, mode);
         final AuthorizationFragment f = new AuthorizationFragment();
         f.setArguments(b);
         return f;
@@ -53,7 +57,7 @@ public class AuthorizationFragment extends Fragment implements FragmentContract.
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public android.view.View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
@@ -61,13 +65,12 @@ public class AuthorizationFragment extends Fragment implements FragmentContract.
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        Log.d("MyLog", "AuthorizationFragment on onCreate() indication = " + getArguments().getInt(KEY_INDICATOR));
-        presenter = getArguments().getInt(KEY_INDICATOR) == FragmentIndication.LOGIN_INDICATION ?
-                new LoginPresenter(getActivity(),this) : new RegistrationPresenter(getActivity(), this);
+        logger.log("AuthorizationFragment in onCreate() mode = " + getArguments().getInt(KEY_INDICATOR));
+        presenter = AuthFragmentInjector.injectPresenter(this, getArguments().getInt(KEY_INDICATOR));
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         btnLogin.setText(presenter.getButtonText());
@@ -83,48 +86,29 @@ public class AuthorizationFragment extends Fragment implements FragmentContract.
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         unbinder.unbind();
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(android.view.View v) {
         if (v.getId() == R.id.btnLogin) {
-            Log.d("MyLog", "AuthorizationFragment in onClick() btnLogin branch");
+            logger.log("AuthorizationFragment in onClick() btnLogin branch");
             presenter.onButtonClick(etEmail.getText().toString(), etPassword.getText().toString());
         }
     }
 
     public void openLocationFragment(String userEmail) {
-        Log.d("MyLog", "AuthorizationFragment in openLocationFragment()");
-        LocationFragment locationFragment = LocationFragment.newInstance();
-        final Bundle bundle = new Bundle();
-        bundle.putString(KEY_EMAIL, userEmail);
-        locationFragment.setArguments(bundle);
-        FragmentTransaction transaction = null;
-        if (getFragmentManager() != null) {
-            transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, locationFragment);
-            getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            transaction.commit();
-        } else {
-            Log.d("MyLog", "AuthorizationFragment in openLocationFragment() getFragmentManager() = null");
-        }
+        logger.log("AuthorizationFragment in openLocationFragment()");
+        Fragment fragment = LocationFragment.newInstance(userEmail);
+        ((FragmentChanger)getActivity()).openFragment(fragment, false);
     }
 
     public void openFragmentForSignIn(){
-        Log.d("MyLog", "AuthorizationFragment in openFragmentForSignIn()");
-        AuthorizationFragment fragment = AuthorizationFragment.newInstance(FragmentIndication.LOGIN_INDICATION);
-        FragmentTransaction transaction = null;
-        if (getFragmentManager() != null) {
-            transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, fragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-        } else {
-            Log.d("MyLog", "AuthorizationFragment in openFragmentForSignIn() getFragmentManager() = null");
-        }
+        logger.log("AuthorizationFragment in openFragmentForSignIn()");
+        Fragment fragment = AuthorizationFragment.newInstance(FragmentIndication.LOGIN_MODE);
+        ((FragmentChanger)getActivity()).openFragment(fragment, true);
     }
 
     @Override
@@ -133,7 +117,7 @@ public class AuthorizationFragment extends Fragment implements FragmentContract.
     }
 
     public String getStringFromResources(int stringId) {
-        Log.d("MyLog", "AuthorizationFragment in getStringFromResources()");
+        logger.log("AuthorizationFragment in getStringFromResources()");
         return getString(stringId);
     }
 
@@ -141,5 +125,20 @@ public class AuthorizationFragment extends Fragment implements FragmentContract.
 //        etEmail.setText("test@test.ua");
 //        etPassword.setText("password");
 //    }
+
+    public Activity getAppActivity(){
+        return getActivity();
+    }
+
+    public void showProgressDialog(String msg){
+        dialog = new ProgressDialog(getActivity(), R.style.CustomDialogTheme);
+        dialog.setMessage(msg);
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+
+    public void hideProgressDialog(){
+        dialog.cancel();
+    }
 
 }

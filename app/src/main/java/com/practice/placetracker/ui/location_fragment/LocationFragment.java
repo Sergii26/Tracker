@@ -2,34 +2,44 @@ package com.practice.placetracker.ui.location_fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.practice.placetracker.R;
+import com.practice.placetracker.android_utils.ILog;
+import com.practice.placetracker.android_utils.Logger;
 import com.practice.placetracker.model.data.current_session.CurrentTrackingSession;
 import com.practice.placetracker.service.LocationService;
-import com.practice.placetracker.ui.authorization_fragment.AuthorizationFragment;
-import com.practice.placetracker.ui.foreground_fragment.ForegroundFragment;
+import com.practice.placetracker.ui.FragmentChanger;
+import com.practice.placetracker.ui.initial_fragment.InitialFragment;
+
+import java.util.Objects;
+
+import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class LocationFragment extends Fragment implements LocationContract.LocationView, View.OnClickListener {
+import static com.practice.placetracker.service.LocationService.ACTION_SERVICE_IS_STOPPED;
+import static com.practice.placetracker.ui.authorization_fragment.FragmentIndication.KEY_EMAIL;
+
+public class LocationFragment extends androidx.fragment.app.Fragment implements LocationContract.View, android.view.View.OnClickListener {
+
+    private final ILog logger = Logger.withTag("MyLog");
 
     private Unbinder unbinder;
 
@@ -46,14 +56,26 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
     @BindView(R.id.tvTime)
     TextView tvTime;
 
-    private LocationContract.LocationBasePresenter presenter;
-    private String userEmail;
+    @Inject
+    LocationContract.Presenter presenter;
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            logger.log("LocationFragment in onReceive()");
+            presenter.stopLocationTracking();
+        }
+    };
 
     public LocationFragment() {
     }
 
-    public static LocationFragment newInstance() {
-        return new LocationFragment();
+    public static LocationFragment newInstance(String userEmail) {
+        LocationFragment locationFragment = new LocationFragment();
+        final Bundle bundle = new Bundle();
+        bundle.putString(KEY_EMAIL, userEmail);
+        locationFragment.setArguments(bundle);
+        return locationFragment;
     }
 
     @Override
@@ -61,34 +83,47 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         setHasOptionsMenu(true);
-        presenter = new LocationPresenter(this);
-        userEmail = this.getArguments().getString(AuthorizationFragment.KEY_EMAIL);
+        DaggerLocationFragmentComponent.builder().locationFragmentModule(new LocationFragmentModule(this)).build().injectLocationFragment(this);
+        registerReceiver();
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public android.view.View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_location, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         unbinder = ButterKnife.bind(this, view);
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        logger.log("LocationFragment in onPause()");
+        presenter.stopObserveDatabase();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        logger.log("LocationFragment in onResume()");
+        presenter.startObserveDatabase();
         presenter.restoreUI();
         presenter.updateMillisFromStart();
+
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
+        logger.log("LocationFragment in onDestroyView()");
+        getActivity().unregisterReceiver(receiver);
         unbinder.unbind();
     }
 
@@ -102,19 +137,18 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_log_out) {
-            Log.i("MyLog", "LocationFragment - onOptionsItemSelected()");
+            logger.log("LocationFragment in onOptionsItemSelected()");
             presenter.logOut();
-            presenter.showForegroundFragment();
+            presenter.showInitialFragment();
         }
         return true;
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(android.view.View v) {
         switch (v.getId()) {
             case R.id.btnStart:
                 presenter.startLocationTracking();
-                presenter.startObserveDatabase();
                 break;
             case R.id.btnStop:
                 presenter.stopLocationTracking();
@@ -122,15 +156,15 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
         }
     }
 
-    public void startLocationService(String collectionName) {
-        Log.i("MyLog", "Fragment - startLocationService() inBundle email = " + userEmail);
+    public void startLocationService(String userEmail) {
+        logger.log("LocationFragment in startLocationService()");
         Intent intent = new Intent(getActivity(), LocationService.class);
-        intent.putExtra(AuthorizationFragment.KEY_EMAIL, collectionName);
+        intent.putExtra(KEY_EMAIL, userEmail);
         getActivity().startService(intent);
     }
 
     public void stopLocationService() {
-        getActivity().stopService(new Intent(getActivity(), LocationService.class));
+        Objects.requireNonNull(getActivity()).stopService(new Intent(getActivity(), LocationService.class));
     }
 
     public void updateTrackingInformation(CurrentTrackingSession currentSession) {
@@ -140,14 +174,9 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
     }
 
     public String getUserEmail() {
-        String email = this.getArguments().getString(AuthorizationFragment.KEY_EMAIL);
-        Log.i("MyLog", "Fragment - getStringFromIntent() ExtraString = " + email);
-        return email;
-    }
-
-    @Override
-    public Context getAppContext() {
-        return this.getContext();
+        String userEmail = this.getArguments().getString(KEY_EMAIL);
+        logger.log("LocationFragment in getStringFromIntent() ExtraString = " + userEmail);
+        return userEmail;
     }
 
     public Activity getViewActivity() {
@@ -157,7 +186,7 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.i("MyLog", "Fragment - onRequestPermissionsResult()");
+        logger.log("LocationFragment in onRequestPermissionsResult()");
         presenter.onRequestPermission(requestCode, grantResults);
     }
 
@@ -167,7 +196,7 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
     }
 
     public String getStringFromResources(int stringId) {
-        Log.d("MyLog", "In LocationFragment at getStringFromResources()");
+        logger.log("LocationFragment in getStringFromResources()");
         return getString(stringId);
     }
 
@@ -191,16 +220,13 @@ public class LocationFragment extends Fragment implements LocationContract.Locat
     }
 
     public void openForegroundFragment() {
-        Log.d("MyLog", "LocationFragment on openForegroundFragment()");
-        ForegroundFragment fragment = ForegroundFragment.newInstance();
-        FragmentTransaction transaction = null;
-        if (getFragmentManager() != null) {
-            transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragment_container, fragment);
-            transaction.commit();
-        } else {
-            Log.d("MyLog", "AuthorizationFragment on openLocationFragment() getFragmentManager() = null");
-        }
+        logger.log("LocationFragment in openForegroundFragment()");
+        Fragment fragment = InitialFragment.newInstance();
+        ((FragmentChanger) getActivity()).openFragment(fragment, true);
     }
 
+    public void registerReceiver(){
+        IntentFilter filter = new IntentFilter(ACTION_SERVICE_IS_STOPPED);
+        getActivity().registerReceiver(receiver, filter);
+    }
 }

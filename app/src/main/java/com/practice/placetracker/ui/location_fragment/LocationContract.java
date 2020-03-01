@@ -6,14 +6,12 @@ import android.content.Context;
 import com.practice.placetracker.model.data.current_session.CurrentTrackingSession;
 
 public interface LocationContract {
-    interface LocationView {
+    interface View {
         void startLocationService(String collectionName);
 
         void stopLocationService();
 
         void updateTrackingInformation(CurrentTrackingSession currentSession);
-
-        Context getAppContext();
 
         String getUserEmail();
 
@@ -32,7 +30,7 @@ public interface LocationContract {
         void openForegroundFragment();
     }
 
-    interface LocationBasePresenter {
+    interface Presenter {
         void startLocationTracking();
 
         void stopLocationTracking();
@@ -47,8 +45,14 @@ public interface LocationContract {
 
         void updateMillisFromStart();
 
-        void showForegroundFragment();
+        void showInitialFragment();
 
         void logOut();
+
+        void stopObserveDatabase();
+
+        void stopTimer();
+
+        void setTrackingState(boolean isTracking);
     }
 }

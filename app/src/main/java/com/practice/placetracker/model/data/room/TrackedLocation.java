@@ -19,7 +19,6 @@ public class TrackedLocation {
     private String userEmail;
 
 
-
     public TrackedLocation(long uniqueId, double latitude, double longitude, long time, float accuracy, boolean isSent, String userEmail) {
         this.uniqueId = uniqueId;
         this.latitude = latitude;

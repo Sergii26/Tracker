@@ -32,11 +32,11 @@ public interface LocationDao {
     @Delete
     Completable deleteLocation(TrackedLocation trackedLocation);
 
-//    @Query("UPDATE orders SET order_price=:price WHERE order_id = :id")
-//    void update(Float price, int id);
-
     @Query("UPDATE locations SET isSent=:isSent WHERE uniqueId = :uniqueId")
     Completable update(boolean isSent, long uniqueId);
+
+    @Query("DELETE from locations WHERE uniqueId = :uniqueId")
+    Completable deleteLocationById(long uniqueId);
 
     @Query("DELETE from locations WHERE isSent = :isSent")
     Completable deleteSentLocations(boolean isSent);

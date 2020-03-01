@@ -1,11 +1,11 @@
-package com.practice.placetracker.ui.foreground_fragment;
+package com.practice.placetracker.ui.initial_fragment;
 
-public interface ForegroundContract {
-    interface ForegroundBasePresenter{
+public interface InitialContract {
+    interface Presenter {
         void showRegistrationFragment();
         void showLoginFragment();
     }
-    interface ForegroundView{
+    interface View {
         void openRegistrationFragment();
         void openLoginFragment();
     }

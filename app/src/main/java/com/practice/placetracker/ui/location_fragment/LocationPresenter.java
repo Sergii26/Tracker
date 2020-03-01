@@ -3,12 +3,13 @@ package com.practice.placetracker.ui.location_fragment;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Handler;
-import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.practice.placetracker.R;
+import com.practice.placetracker.android_utils.ILog;
+import com.practice.placetracker.android_utils.Logger;
 import com.practice.placetracker.model.data.current_session.CurrentTrackingSession;
-import com.practice.placetracker.model.data.room.LocationDatabase;
+import com.practice.placetracker.model.data.room.IDatabase;
 import com.practice.placetracker.model.data.room.TrackedLocation;
 
 import java.util.List;
@@ -16,20 +17,22 @@ import java.util.Locale;
 
 import androidx.core.content.ContextCompat;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 
-public class LocationPresenter implements LocationContract.LocationBasePresenter {
+public class LocationPresenter implements LocationContract.Presenter {
+
+    private final ILog logger = Logger.withTag("MyLog");
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
-    private LocationContract.LocationView view;
+    private LocationContract.View view;
     private CurrentTrackingSession currentSession;
-    private LocationDatabase db;
-    private FirebaseAuth mAuth;
+    private IDatabase db;
     private boolean isTracking;
     private long startTime;
     private long millisFromStart;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final Handler handler = new Handler();
     private Runnable showTime = new Runnable() {
         @Override
@@ -44,29 +47,32 @@ public class LocationPresenter implements LocationContract.LocationBasePresenter
         }
     };
 
-    LocationPresenter(final LocationContract.LocationView view) {
+    LocationPresenter(final LocationContract.View view, IDatabase database, CurrentTrackingSession currentSession) {
         this.view = view;
-        db = LocationDatabase.getInstance(view.getAppContext());
-        currentSession = CurrentTrackingSession.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+        db = database;
+        this.currentSession = currentSession;
+    }
+
+    public void setTrackingState(boolean isTracking){
+        this.isTracking = isTracking;
     }
 
     public void startObserveDatabase() {
-        Log.i("MyLog", "LocationPresenter - startObserveDatabase() Start observing");
-        Disposable disposable = db.locationDao().getAllLocationsRx()
+        logger.log("LocationPresenter in startObserveDatabase() Start observing");
+        compositeDisposable.add(db.locationDao().getAllLocationsRx()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<TrackedLocation>>() {
                     @Override
                     public void accept(List<TrackedLocation> trackedLocations) throws Exception {
-                        Log.i("MyLog", "LocationPresenter - startObserveDatabase() accept");
+                        logger.log("LocationPresenter in startObserveDatabase() accept");
                         view.updateTrackingInformation(currentSession);
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        Log.i("MyLog", "LocationPresenter - startObserveDatabase() error: " + throwable.getMessage());
+                        logger.log("LocationPresenter in startObserveDatabase() error: " + throwable.getMessage());
                     }
-                });
+                }));
     }
 
     @Override
@@ -84,12 +90,14 @@ public class LocationPresenter implements LocationContract.LocationBasePresenter
         }
     }
 
+
     @Override
     public void stopLocationTracking() {
         view.stopLocationService();
+        stopObserveDatabase();
         isTracking = false;
         view.setButtonsState(isTracking);
-        startTime = 0;
+
         stopTimer();
     }
 
@@ -99,7 +107,7 @@ public class LocationPresenter implements LocationContract.LocationBasePresenter
     }
 
     public void onPermissionDenied() {
-        Log.i("MyLog", "LocationPresenter - onPermissionDenied()");
+        logger.log("LocationPresenter in onPermissionDenied()");
         view.makeToast(view.getStringFromResources(R.string.permission_denied));
     }
 
@@ -114,14 +122,14 @@ public class LocationPresenter implements LocationContract.LocationBasePresenter
                 if (ContextCompat.checkSelfPermission(view.getViewActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {
-                    Log.i("MyLog", "Fragment - onRequestPermissionsResult() permission granted");
+                    logger.log("LocationPresenter in onRequestPermissionsResult() permission granted");
                     startLocationTracking();
                 }
 
             } else {
                 // permission denied, boo! Disable the
                 // functionality that depends on this permission.
-                Log.i("MyLog", "Fragment - onRequestPermissionsResult() permission denied");
+                logger.log("LocationPresenter in onRequestPermissionsResult() permission denied");
                 onPermissionDenied();
             }
         }
@@ -143,14 +151,25 @@ public class LocationPresenter implements LocationContract.LocationBasePresenter
     }
 
     public void stopTimer() {
+        startTime = 0;
         handler.removeCallbacks(showTime);
     }
 
     public void logOut(){
-        mAuth.signOut();
+        FirebaseAuth.getInstance().signOut();
     }
 
-    public void showForegroundFragment(){
+    @Override
+    public void stopObserveDatabase() {
+        logger.log("LocationPresenter in stopObserveDatabase() CompositeDisposable = " + compositeDisposable.size());
+        if(compositeDisposable.size() != 0) {
+            compositeDisposable.clear();
+        }
+        logger.log("LocationPresenter in stopObserveDatabase() CompositeDisposable = " + compositeDisposable.size());
+    }
+
+    public void showInitialFragment(){
+        stopObserveDatabase();
         view.stopLocationService();
         currentSession.clearCurrentSession();
         view.openForegroundFragment();

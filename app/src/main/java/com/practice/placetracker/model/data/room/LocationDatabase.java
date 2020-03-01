@@ -7,21 +7,16 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 
-@Database(entities = {TrackedLocation.class}, version = 3, exportSchema = false)
-public abstract class LocationDatabase extends RoomDatabase {
-    private static LocationDatabase database;
-    private static final String DB_NAME = "locations.db";
-    private static final Object LOCK = new Object();
+@Database(entities = {TrackedLocation.class}, version = 7, exportSchema = false)
+public abstract class LocationDatabase extends RoomDatabase implements IDatabase {
+
+    public static final String DB_NAME = "locations.db";
 
     public static LocationDatabase getInstance(Context context) {
-        synchronized (LOCK) {
-            if (database == null) {
-                database = Room.databaseBuilder(context, LocationDatabase.class, DB_NAME)
-                        .fallbackToDestructiveMigration()
-                        .build();
-            }
-            return database;
-        }
+
+        return Room.databaseBuilder(context, LocationDatabase.class, DB_NAME)
+                .fallbackToDestructiveMigration()
+                .build();
     }
 
     public abstract LocationDao locationDao();

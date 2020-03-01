@@ -1,14 +1,19 @@
 package com.practice.placetracker.ui.authorization_fragment;
 
-public class FragmentContract {
-    interface BaseView{
+import android.app.Activity;
+
+public class AuthorizationFragmentContract {
+    interface View {
         void openLocationFragment(String userEmail);
         void makeToast(String message);
         String getStringFromResources(int stringId);
         void openFragmentForSignIn();
+        Activity getAppActivity();
+        void showProgressDialog(String msg);
+        void hideProgressDialog();
     }
 
-    interface BasePresenter {
+    interface Presenter {
         void onButtonClick(String email, String password);
         String getButtonText();
     }

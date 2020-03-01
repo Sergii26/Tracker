@@ -1,10 +1,6 @@
 package com.practice.placetracker.model.data.current_session;
 
 
-import android.location.Location;
-
-import io.reactivex.Observable;
-
 public class CurrentTrackingSession {
 
     public static final int TIME_INDICATION = 0;
@@ -36,7 +32,7 @@ public class CurrentTrackingSession {
     public void clearCurrentSession(){
         locationCount = 0;
         locationsByTime = 0;
-        locationsByDistance = 0;;
+        locationsByDistance = 0;
     }
 
     public int getLocationCount() {
