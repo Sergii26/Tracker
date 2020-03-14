@@ -1,25 +1,35 @@
 package com.practice.placetracker;
 
-import com.practice.placetracker.model.data.room.DatabaseWorkerModule;
-import com.practice.placetracker.ui.location_fragment.LocationFragmentModule;
+import com.practice.placetracker.model.cache.SessionCache;
+import com.practice.placetracker.model.dao.location.LocationDao;
+import com.practice.placetracker.model.network.auth.AuthNetwork;
+import com.practice.placetracker.model.network.location.LocationsNetwork;
+import com.practice.placetracker.model.prefs.Prefs;
+import com.practice.placetracker.model.tracker.LocationsSupplier;
+import com.practice.placetracker.ui.location.LocationFragmentModule;
 
 import javax.inject.Singleton;
 
 import dagger.Component;
 
-
-//@Component(modules = {DatabaseWorkerModule.class, LocationClientModule.class, FirestoreClientModule.class})
-//public interface AppComponent {
-//    public DatabaseWorker provideDatabaseWorker();
-//    public ILocationClient provideLocationClient();
-//    public IFirestoreClient provideFirestoreClient();
-
-
 @Singleton
 @Component(modules = {AppModule.class})
 public interface AppComponent {
-    public void injectLocationDatabase(DatabaseWorkerModule module);
-    public void injectLocationFragment(LocationFragmentModule module);
+
+    void injectLocationFragment(LocationFragmentModule module);
+
+    AuthNetwork getAuthNetwork();
+
+    Prefs getPrefs();
+
+    SessionCache getSessionCache();
+
+    LocationsNetwork getLocationsNetwork();
+
+    LocationsSupplier getLocationsSupplier();
+
+    LocationDao getLocationDao();
 }
+
 
 

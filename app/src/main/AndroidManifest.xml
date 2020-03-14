@@ -15,18 +15,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver
-            android:name=".service.job_service.ScheduledJobReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.practice.placetracker.action.SEND_TO_DATABASE" />
-            </intent-filter>
-        </receiver>
+
         <receiver android:name=".service.ServiceInterruptReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
+
                 <action android:name="com.practice.placetracker.action.INTERRUPT_SERVICE" />
             </intent-filter>
         </receiver>
@@ -40,9 +34,8 @@
         </activity>
 
         <service android:name=".service.LocationService" />
-        <service android:name=".service.job_service.ScheduledSanderService" />
         <service
-            android:name=".service.job_service.ScheduledJobService"
+            android:name=".service.job.ScheduledJobService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />

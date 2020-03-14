@@ -1,27 +1,62 @@
 package com.practice.placetracker;
 
-import com.practice.placetracker.model.data.room.IDatabase;
-import com.practice.placetracker.model.data.room.LocationDatabase;
+import com.practice.placetracker.model.cache.SessionCache;
+import com.practice.placetracker.model.cache.SessionCacheImpl;
+import com.practice.placetracker.model.dao.location.LocationDao;
+import com.practice.placetracker.model.dao.location.LocationDatabase;
+import com.practice.placetracker.model.network.auth.AuthNetwork;
+import com.practice.placetracker.model.network.auth.FirebaseAuthNetwork;
+import com.practice.placetracker.model.network.location.FirebaseLocationsNetwork;
+import com.practice.placetracker.model.network.location.LocationsNetwork;
+import com.practice.placetracker.model.prefs.Prefs;
+import com.practice.placetracker.model.prefs.PrefsImpl;
+import com.practice.placetracker.model.tracker.LocationClient;
+import com.practice.placetracker.model.tracker.LocationsSupplier;
+import com.practice.placetracker.service.LocationServicePresenter;
 
 import javax.inject.Singleton;
 
-import androidx.room.Room;
 import dagger.Module;
 import dagger.Provides;
 
 @Module
 public class AppModule {
 
-    private final LocationDatabase database;
-
-    public AppModule() {
-        database = LocationDatabase.getInstance(App.getInstance().getAppContext());
+    @Provides
+    @Singleton
+    public AuthNetwork provideAuthNetwork() {
+        return new FirebaseAuthNetwork();
     }
 
     @Provides
     @Singleton
-    public IDatabase provideLocationDatabase(){
-        return database;
+    public Prefs providePreferences() {
+        return new PrefsImpl(App.getInstance());
+    }
+
+    @Provides
+    @Singleton
+    public LocationsNetwork provideLocationsNetwork() {
+        return new FirebaseLocationsNetwork();
+    }
+
+    @Provides
+    @Singleton
+    public SessionCache provideSessionCache() {
+        return new SessionCacheImpl();
+    }
+
+    @Provides
+    public LocationsSupplier provideLocationsSupplier() {
+        return new LocationClient(App.getInstance(), LocationServicePresenter.UPDATE_LOCATION_TIME,
+                LocationServicePresenter.UPDATE_LOCATION_DISTANCE);
+    }
+
+    @Provides
+    @Singleton
+    public LocationDao provideLocationDao() {
+        return LocationDatabase.newInstance(App.getInstance());
     }
 }
+
 

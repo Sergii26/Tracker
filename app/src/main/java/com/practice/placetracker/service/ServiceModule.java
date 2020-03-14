@@ -2,12 +2,7 @@ package com.practice.placetracker.service;
 
 import com.practice.placetracker.App;
 import com.practice.placetracker.AppComponent;
-import com.practice.placetracker.model.data.room.DaggerDatabaseWorkerComponent;
-import com.practice.placetracker.model.data.room.DatabaseWorkerComponent;
-import com.practice.placetracker.model.firestore_api.DaggerFirestoreClientComponent;
-import com.practice.placetracker.model.firestore_api.FirestoreClientComponent;
-import com.practice.placetracker.model.location_api.DaggerLocationClientComponent;
-import com.practice.placetracker.model.location_api.LocationClientComponent;
+import com.practice.placetracker.model.dao.location.DatabaseWorker;
 
 import dagger.Module;
 import dagger.Provides;
@@ -17,15 +12,16 @@ public class ServiceModule {
 
     private LocationServiceContract.Service service;
 
-    public ServiceModule(LocationServiceContract.Service service) {
+    ServiceModule(LocationServiceContract.Service service) {
         this.service = service;
     }
 
     @Provides
-    public LocationServiceContract.Presenter providePresenter(){
-        final DatabaseWorkerComponent dbWorkerComponent = DaggerDatabaseWorkerComponent.create();
-        final FirestoreClientComponent firestoreComponent = DaggerFirestoreClientComponent.create();
-        final LocationClientComponent locationComponent = DaggerLocationClientComponent.create();
-        return new LocationServicePresenter(service, locationComponent.provideLocationClient(), dbWorkerComponent.provideDatabaseWorker(), firestoreComponent.provideFirestoreClient());
+    public LocationServiceContract.Presenter providePresenter() {
+        final AppComponent appComponent = App.getInstance().getAppComponent();
+        return new LocationServicePresenter(service, appComponent.getLocationsSupplier(),
+                new DatabaseWorker(appComponent.getLocationDao()),
+                appComponent.getSessionCache(), appComponent.getPrefs(), appComponent.getLocationsNetwork());
     }
 }
+

@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.practice.placetracker.App;
-import com.practice.placetracker.android_utils.ILog;
-import com.practice.placetracker.android_utils.Logger;
+import com.practice.placetracker.model.logger.ILog;
+import com.practice.placetracker.model.logger.Logger;
 
 public class ServiceInterruptReceiver extends BroadcastReceiver {
 
@@ -28,3 +28,4 @@ public class ServiceInterruptReceiver extends BroadcastReceiver {
     }
 
 }
+
