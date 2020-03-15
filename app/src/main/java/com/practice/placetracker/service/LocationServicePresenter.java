@@ -18,7 +18,7 @@ public class LocationServicePresenter implements LocationServiceContract.Present
 
     private final ILog logger = Logger.withTag("MyLog");
 
-    public static final long UPDATE_LOCATION_TIME = 1000 * 10 * 1;
+    public static final long UPDATE_LOCATION_TIME = 1000 * 60 * 10;
     public static final float UPDATE_LOCATION_DISTANCE = 60;
 
     private final Prefs prefs;
