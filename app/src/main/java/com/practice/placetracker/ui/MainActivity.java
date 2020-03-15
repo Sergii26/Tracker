@@ -34,7 +34,6 @@ public class MainActivity extends HostActivity implements InitialContract.Host,
         setContentView(R.layout.activity_main);
 
         if (getSupportFragmentManager().getFragments().size() == 0) {
-            logger.log("MainActivity in onCreate() add InitalFragment");
             addFragment(InitialFragment.newInstance());
         }
     }
@@ -47,37 +46,34 @@ public class MainActivity extends HostActivity implements InitialContract.Host,
 
     @Override
     protected int getFragmentContainerId() {
-        logger.log("MainActivity in getFragmentContainerId()");
         return R.id.fragment_container;
     }
 
     @Override
     public void showLoginFragment() {
-        logger.log("MainActivity in showLoginFragment()");
-        replaceFragmentToBackStack(AuthFragment.newInstance(FragmentIndication.LOGIN_MODE));
+        logger.log("InitialFragment on openLoginFragment()");
+        addFragmentToBackStack(AuthFragment.newInstance(FragmentIndication.LOGIN_MODE));
     }
 
     @Override
     public void showRegistrationFragment() {
-        logger.log("MainActivity in showRegistrationFragment()");
-        replaceFragmentToBackStack(AuthFragment.newInstance(FragmentIndication.REGISTRATION_MODE));
+        logger.log("InitialFragment in openRegistrationFragment()");
+        addFragmentToBackStack(AuthFragment.newInstance(FragmentIndication.REGISTRATION_MODE));
     }
 
     @Override
     public void showLocationFragment() {
-        logger.log("MainActivity in showLocationFragment()");
-        replaceFragment(LocationFragment.newInstance());
+        logger.log("InitialFragment in openLocationFragment()");
+        addFragment(LocationFragment.newInstance());
     }
 
     @Override
     public void showInitialFragment() {
-        logger.log("MainActivity in showRegistrationFragment()");
         clearBackStack();
-        replaceFragment(InitialFragment.newInstance());
+        addFragment(InitialFragment.newInstance());
     }
 
     private void clearBackStack() {
-        logger.log("MainActivity in clearBackStack()");
         final FragmentManager manager = getSupportFragmentManager();
         while (manager.getBackStackEntryCount() > 0) {
             manager.popBackStackImmediate();
@@ -86,13 +82,11 @@ public class MainActivity extends HostActivity implements InitialContract.Host,
 
     @Override
     public boolean hasProgress() {
-        logger.log("MainActivity in hasProgress()");
         return true;
     }
 
     @Override
     public void showProgress(String title, String message) {
-        logger.log("MainActivity in showProgress()");
         if (progress == null) {
             progress = new ProgressDialogWrapper(this, title, message);
         }
@@ -103,7 +97,6 @@ public class MainActivity extends HostActivity implements InitialContract.Host,
 
     @Override
     public void showProgress(int titleRes, int messageRes) {
-        logger.log("MainActivity in showProgress()");
         if (progress == null) {
             progress = new ProgressDialogWrapper(this, titleRes, messageRes);
         }
@@ -114,7 +107,6 @@ public class MainActivity extends HostActivity implements InitialContract.Host,
 
     @Override
     public void showProgress() {
-        logger.log("MainActivity in showProgress()");
         if (progress == null) {
             progress = new ProgressDialogWrapper(this);
         }
@@ -125,11 +117,9 @@ public class MainActivity extends HostActivity implements InitialContract.Host,
 
     @Override
     public void hideProgress() {
-        logger.log("MainActivity in hideProgress()");
         if (progress != null) {
             progress.dismiss();
             progress = null;
         }
     }
-
 }

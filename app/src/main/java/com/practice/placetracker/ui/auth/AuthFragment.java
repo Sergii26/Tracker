@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.jakewharton.rxbinding3.widget.RxTextView;
+import com.jakewharton.rxbinding3.widget.TextViewAfterTextChangeEvent;
 import com.practice.placetracker.R;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
@@ -26,6 +27,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 import static com.practice.placetracker.ui.auth.FragmentIndication.KEY_INDICATOR;
 
@@ -104,9 +106,10 @@ public class AuthFragment extends MvpFragment<AuthContract.Presenter, AuthContra
 
     @Override
     public void openLocationFragment() {
-        logger.log("AuthFragment in openLocationFragment() " + (Objects.requireNonNull(Objects.requireNonNull(getActivity()).getCurrentFocus()).getWindowToken() != null));
+        logger.log("AuthFragment in openLocationFragment()");
         // todo: close keyboard
         // keyboard closing is replaced to onClick method
+
         if (hasCallBack()) {
             getCallBack().showLocationFragment();
         }

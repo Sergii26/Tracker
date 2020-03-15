@@ -17,7 +17,7 @@ import io.reactivex.subjects.PublishSubject;
 
 public class LocationClient implements LocationsSupplier {
 
-    private final ILog logger = Logger.withTag("MyLog");
+    private final ILog logger;
 
     private final FusedLocationProviderClient timeLocationProvider;
     private final FusedLocationProviderClient distanceLocationProvider;
@@ -37,7 +37,8 @@ public class LocationClient implements LocationsSupplier {
         }
     };
 
-    public LocationClient(Context context, long updateTime, float updateDistance) {
+    public LocationClient(Context context, long updateTime, float updateDistance, ILog logger) {
+        this.logger = logger;
         logger.log("LocationClient in constructor");
         timeLocationProvider = LocationServices.getFusedLocationProviderClient(context);
         distanceLocationProvider = LocationServices.getFusedLocationProviderClient(context);

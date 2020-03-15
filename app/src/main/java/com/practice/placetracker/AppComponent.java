@@ -1,6 +1,8 @@
 package com.practice.placetracker;
 
 import com.practice.placetracker.model.cache.SessionCache;
+import com.practice.placetracker.model.dao.location.DaoWorker;
+import com.practice.placetracker.model.dao.location.DatabaseWorker;
 import com.practice.placetracker.model.dao.location.LocationDao;
 import com.practice.placetracker.model.network.auth.AuthNetwork;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
@@ -29,6 +31,8 @@ public interface AppComponent {
     LocationsSupplier getLocationsSupplier();
 
     LocationDao getLocationDao();
+
+    DaoWorker provideDatabaseWorker();
 }
 
 

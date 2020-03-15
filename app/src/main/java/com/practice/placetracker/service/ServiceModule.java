@@ -3,6 +3,7 @@ package com.practice.placetracker.service;
 import com.practice.placetracker.App;
 import com.practice.placetracker.AppComponent;
 import com.practice.placetracker.model.dao.location.DatabaseWorker;
+import com.practice.placetracker.model.logger.Logger;
 
 import dagger.Module;
 import dagger.Provides;
@@ -20,7 +21,7 @@ public class ServiceModule {
     public LocationServiceContract.Presenter providePresenter() {
         final AppComponent appComponent = App.getInstance().getAppComponent();
         return new LocationServicePresenter(service, appComponent.getLocationsSupplier(),
-                new DatabaseWorker(appComponent.getLocationDao()),
+                new DatabaseWorker(appComponent.getLocationDao(), Logger.withTag("MyLog")),
                 appComponent.getSessionCache(), appComponent.getPrefs(), appComponent.getLocationsNetwork());
     }
 }

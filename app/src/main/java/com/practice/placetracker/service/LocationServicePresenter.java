@@ -1,28 +1,24 @@
 package com.practice.placetracker.service;
 
-import com.practice.placetracker.model.logger.ILog;
-import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.model.cache.SessionCache;
 import com.practice.placetracker.model.dao.location.DatabaseWorker;
 import com.practice.placetracker.model.dao.location.TrackedLocationSchema;
-import com.practice.placetracker.model.network.Result;
+import com.practice.placetracker.model.logger.ILog;
+import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
 import com.practice.placetracker.model.prefs.Prefs;
 import com.practice.placetracker.model.tracker.LocationsSupplier;
-import com.practice.placetracker.model.tracker.TrackingResult;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class LocationServicePresenter implements LocationServiceContract.Presenter {
 
     private final ILog logger = Logger.withTag("MyLog");
 
-    public static final long UPDATE_LOCATION_TIME = 1000 * 30*1;
+    public static final long UPDATE_LOCATION_TIME = 1000 * 10 * 1;
     public static final float UPDATE_LOCATION_DISTANCE = 60;
 
     private final Prefs prefs;
@@ -54,42 +50,37 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                         .observeOn(AndroidSchedulers.mainThread()),
 
                 locationsSupplier.getLocationsObservable(),
-                new BiFunction<String, TrackingResult, TrackedLocationSchema>() {
-                    @Override
-                    public TrackedLocationSchema apply(String email, TrackingResult locationResult) throws Exception {
-                        logger.log("LocationServicePresenter in onLocationResult() " + locationResult.getType());
-                        sessionCache.updateSession(locationResult.getType());
-                        return new TrackedLocationSchema(locationResult.getLocation(), false, email);
-                    }
+                (email, locationResult) -> {
+                    logger.log("LocationServicePresenter in onLocationResult() " + locationResult.getType());
+                    sessionCache.updateSession(locationResult.getType());
+                    return new TrackedLocationSchema(locationResult.getLocation(), false, email);
                 })
-                .subscribe(new Consumer<TrackedLocationSchema>() {
-                    @Override
-                    public void accept(TrackedLocationSchema location) throws Exception {
-                        dbWorker.showSizeInLog();
-                        if (service.isConnectedToNetwork()) {
-                            logger.log("LocationServicePresenter in onLocationResult() - is connected to internet");
-                            disposables.add(network.sendLocation(location)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new Consumer<Result<Boolean>>() {
-                                        @Override
-                                        public void accept(Result<Boolean> result) throws Exception {
-                                            if (result.isFail()) {
-                                                logger.log("LocationServicePresenter in onLocationResult() location sent - failure");
-                                                service.scheduleJob();
-                                            } else {
-                                                logger.log("LocationServicePresenter in onLocationResult() location sent - success");
-//                                                // todo sync this actions: they are async!
-//                                                // this code was written only for inform LocationFragmentPresenter about new location via DB
-//                                                // now presenter has information from sessionCache
-                                            }
-                                        }
-                                    }));
-                        } else {
-                            logger.log("LocationServicePresenter in onLocationResult() - internet is not working");
-                            dbWorker.insertLocation(location);
-                            service.scheduleJob();
-                        }
+                .subscribe(location -> {
+                    printDBSizeInLog();
+                    if (service.isConnectedToNetwork()) {
+                        logger.log("LocationServicePresenter in onLocationResult() - is connected to internet");
+                        disposables.add(network.sendLocation(location)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(result -> {
+                                    if (result.isFail()) {
+                                        logger.log("LocationServicePresenter in onLocationResult() location sent - failure");
+                                        disposables.add(dbWorker.insertLocation(location)
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(() -> logger.log("LocationServicePresenter insert location - success"), throwable -> logger.log("LocationServicePresenter insert location - failure")));
+                                        service.scheduleJob();
+                                    } else {
+                                        logger.log("LocationServicePresenter in onLocationResult() location sent - success");
+                                    }
+                                }));
+                    } else {
+                        logger.log("LocationServicePresenter in onLocationResult() - internet is not working");
+                        disposables.add(dbWorker.insertLocation(location)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(() -> logger.log("LocationServicePresenter insert location - success"), throwable -> logger.log("LocationServicePresenter insert location - failure")));
+                        service.scheduleJob();
                     }
                 }));
         locationsSupplier.startLocationObserving();
@@ -99,7 +90,18 @@ public class LocationServicePresenter implements LocationServiceContract.Present
     public void stopTracking() {
         logger.log("LocationServicePresenter in stopTracking()");
         locationsSupplier.stopLocationObserving();
-        dbWorker.disposeDisposable();
+        disposables.dispose();
+    }
+
+    private void printDBSizeInLog() {
+        disposables.add(Observable.just(dbWorker)
+        .subscribeOn(Schedulers.io())
+        .observeOn(Schedulers.io())
+        .subscribe(databaseWorker -> {
+            final int size = databaseWorker.getAllLocations().size();
+            logger.log("LocationServicePresenter in printDBSizeInLog() DB size = " + size);
+        }));
+
     }
 }
 

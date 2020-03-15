@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 
 import com.practice.placetracker.App;
-import com.practice.placetracker.model.dao.location.DatabaseWorker;
 import com.practice.placetracker.model.dao.location.TrackedLocationSchema;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
@@ -19,7 +18,6 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class ScheduledJobService extends JobService {
@@ -47,37 +45,37 @@ public class ScheduledJobService extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters params) {
-//      additional rx code only for invoke DB in not UI thread
-        disposables.add(Observable.just("")
+        disposables.add(Observable.just(App.getInstance().getAppComponent().provideDatabaseWorker())
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .subscribe(new Consumer<String>() {
-                    @Override
-                    public void accept(String s) throws Exception {
-                        logger.log("ScheduledJobService in onStartJob");
-                        logger.log("ScheduledSenderService in handleActionSendToDatabase");
-                        final DatabaseWorker dbWorker = new DatabaseWorker(App.getInstance().getAppComponent().getLocationDao());
-                        final List<TrackedLocationSchema> locations = dbWorker.getLocationsBySent(false);
-                        logger.log("ScheduledSenderService in handleActionSendToDatabase DATABASE SIZE = " + locations.size());
-                        if (locations.size() > 0) {
-                            dbWorker.showSizeInLog();
-                            final LocationsNetwork locationsNetwork = App.getInstance().getAppComponent().getLocationsNetwork();
-                            for (TrackedLocationSchema location : locations) {
-                                disposables.add(locationsNetwork.sendLocation(location)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(result -> {
-                                                    if (result.isFail()) {
-                                                        logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + result.getError().getMessage());
-                                                        schedule(App.getInstance().getAppContext());
-                                                    } else {
-                                                        logger.log("ScheduledSenderService in handleActionSendToDatabase onSuccess");
-                                                        dbWorker.updateLocation(true, location.getUniqueId());
-                                                        dbWorker.deleteLocation(location);
-                                                    }
+                .subscribe(dbWorker -> {
+                    logger.log("ScheduledJobService in onStartJob");
+                    logger.log("ScheduledSenderService in handleActionSendToDatabase");
+                    final List<TrackedLocationSchema> locations = dbWorker.getLocationsBySent(false);
+                    logger.log("ScheduledSenderService in handleActionSendToDatabase DATABASE SIZE = " + locations.size());
+                    if (locations.size() > 0) {
+                        final LocationsNetwork locationsNetwork = App.getInstance().getAppComponent().getLocationsNetwork();
+                        for (TrackedLocationSchema location : locations) {
+                            disposables.add(locationsNetwork.sendLocation(location)
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(result -> {
+                                                if (result.isFail()) {
+                                                    logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + result.getError().getMessage());
+                                                    schedule(App.getInstance().getAppContext());
+                                                } else {
+                                                    logger.log("ScheduledSenderService in handleActionSendToDatabase onSuccess");
+                                                    disposables.add(dbWorker.updateLocation(true, location.getUniqueId())
+                                                            .subscribeOn(Schedulers.io())
+                                                            .observeOn(AndroidSchedulers.mainThread())
+                                                            .subscribe(() -> logger.log("ScheduledSenderService update location - success"), throwable -> logger.log("ScheduledSenderService update location - failure" + throwable.getMessage())));
+                                                    disposables.add(dbWorker.deleteLocation(location)
+                                                            .subscribeOn(Schedulers.io())
+                                                            .observeOn(AndroidSchedulers.mainThread())
+                                                            .subscribe(() -> logger.log("ScheduledSenderService delete location - success"), throwable -> logger.log("ScheduledSenderService delete location - failure" + throwable.getMessage())));
                                                 }
-                                        ));
-                            }
+                                            }
+                                    ));
                         }
                     }
                 }));
@@ -90,5 +88,6 @@ public class ScheduledJobService extends JobService {
         logger.log("ScheduledJobService in onStopJob");
         return false;
     }
+
 }
 
