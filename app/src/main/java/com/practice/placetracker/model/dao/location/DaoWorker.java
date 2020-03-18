@@ -12,8 +12,6 @@ public interface DaoWorker {
 
     Completable deleteLocation(TrackedLocationSchema location);
 
-    Completable updateLocation(boolean isSent, long uniqueId);
-
     List<TrackedLocationSchema> getLocationsBySent(boolean isSent);
 
 }

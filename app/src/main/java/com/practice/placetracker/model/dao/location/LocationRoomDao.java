@@ -24,8 +24,5 @@ public interface LocationRoomDao {
     @Delete
     Completable deleteLocation(TrackedLocationSchema trackedLocation);
 
-    @Query("UPDATE locations SET isSent=:isSent WHERE uniqueId = :uniqueId")
-    Completable update(boolean isSent, long uniqueId);
-
 }
 

@@ -31,11 +31,6 @@ public class DatabaseWorker implements DaoWorker {
         return database.locationDao().deleteLocation(location);
     }
 
-    public Completable updateLocation(boolean isSent, long uniqueId) {
-        logger.log("DatabaseWorker in updateLocation()");
-        return database.locationDao().update(isSent, uniqueId);
-    }
-
     public List<TrackedLocationSchema> getLocationsBySent(boolean isSent) {
         logger.log("DatabaseWorker in getLocationsBySent()");
         return database.locationDao().getLocationsBySent(false);

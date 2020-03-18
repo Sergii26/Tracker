@@ -8,14 +8,13 @@ import android.content.ComponentName;
 import android.content.Context;
 
 import com.practice.placetracker.App;
-import com.practice.placetracker.model.dao.location.TrackedLocationSchema;
+import com.practice.placetracker.AppComponent;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
 
-import java.util.List;
-
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -45,41 +44,41 @@ public class ScheduledJobService extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters params) {
-        disposables.add(Observable.just(App.getInstance().getAppComponent().provideDatabaseWorker())
+        logger.log("ScheduledJobService in onStartJob");
+        final AppComponent appComponent = App.getInstance().getAppComponent();
+        final LocationsNetwork locationsNetwork = appComponent.getLocationsNetwork();
+        disposables.add(Observable.just(appComponent.provideDatabaseWorker())
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .subscribe(dbWorker -> {
-                    logger.log("ScheduledJobService in onStartJob");
-                    logger.log("ScheduledSenderService in handleActionSendToDatabase");
-                    final List<TrackedLocationSchema> locations = dbWorker.getLocationsBySent(false);
-                    logger.log("ScheduledSenderService in handleActionSendToDatabase DATABASE SIZE = " + locations.size());
-                    if (locations.size() > 0) {
-                        final LocationsNetwork locationsNetwork = App.getInstance().getAppComponent().getLocationsNetwork();
-                        for (TrackedLocationSchema location : locations) {
-                            disposables.add(locationsNetwork.sendLocation(location)
+                .doOnNext(worker -> logger.log("ScheduledSenderService in handleActionSendToDatabase"))
+                .flatMap(worker -> {
+                    return Observable.just(worker.getLocationsBySent(false))
+                            .doOnNext(locations -> logger.log("ScheduledSenderService in handleActionSendToDatabase DATABASE SIZE = " + locations.size()))
+                            .flatMap(locations -> Observable.fromIterable(locations))
+                            .flatMap(location -> locationsNetwork.sendLocation(location)
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(result -> {
-                                                if (result.isFail()) {
-                                                    logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + result.getError().getMessage());
-                                                    schedule(App.getInstance().getAppContext());
-                                                } else {
-                                                    logger.log("ScheduledSenderService in handleActionSendToDatabase onSuccess");
-                                                    disposables.add(dbWorker.updateLocation(true, location.getUniqueId())
-                                                            .subscribeOn(Schedulers.io())
-                                                            .observeOn(AndroidSchedulers.mainThread())
-                                                            .subscribe(() -> logger.log("ScheduledSenderService update location - success"), throwable -> logger.log("ScheduledSenderService update location - failure" + throwable.getMessage())));
-                                                    disposables.add(dbWorker.deleteLocation(location)
-                                                            .subscribeOn(Schedulers.io())
-                                                            .observeOn(AndroidSchedulers.mainThread())
-                                                            .subscribe(() -> logger.log("ScheduledSenderService delete location - success"), throwable -> logger.log("ScheduledSenderService delete location - failure" + throwable.getMessage())));
-                                                }
-                                            }
-                                    ));
-                        }
-                    }
-                }));
-
+                                    .doOnError(error -> {
+                                        logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + error.getMessage());
+                                        schedule(App.getInstance().getAppContext());
+                                    })
+                                    .flatMap(result -> {
+                                        if (result.isFail()) {
+                                            logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + result.getError().getMessage());
+                                            schedule(App.getInstance().getAppContext());
+                                            return Single.never();
+                                        } else {
+                                            logger.log("ScheduledSenderService in handleActionSendToDatabase onSuccess");
+                                            return worker.deleteLocation(location)
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .doOnComplete(() -> logger.log("ScheduledSenderService delete location - success"))
+                                                    .doOnError(throwable -> logger.log("ScheduledSenderService delete location - failure" + throwable.getMessage()))
+                                                    .toSingleDefault(new Object()); // completable - to single
+                                        }
+                                    }).toObservable());
+                })
+                .subscribe());
         return false;
     }
 

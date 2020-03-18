@@ -12,6 +12,7 @@ import com.practice.placetracker.model.tracker.LocationsSupplier;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class LocationServicePresenter implements LocationServiceContract.Presenter {
@@ -56,7 +57,6 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                     return new TrackedLocationSchema(locationResult.getLocation(), false, email);
                 })
                 .subscribe(location -> {
-                    printDBSizeInLog();
                     if (service.isConnectedToNetwork()) {
                         logger.log("LocationServicePresenter in onLocationResult() - is connected to internet");
                         disposables.add(network.sendLocation(location)
@@ -65,10 +65,7 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                                 .subscribe(result -> {
                                     if (result.isFail()) {
                                         logger.log("LocationServicePresenter in onLocationResult() location sent - failure");
-                                        disposables.add(dbWorker.insertLocation(location)
-                                                .subscribeOn(Schedulers.io())
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe(() -> logger.log("LocationServicePresenter insert location - success"), throwable -> logger.log("LocationServicePresenter insert location - failure")));
+                                        disposables.add(insertToDatabase(location));
                                         service.scheduleJob();
                                     } else {
                                         logger.log("LocationServicePresenter in onLocationResult() location sent - success");
@@ -76,10 +73,7 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                                 }));
                     } else {
                         logger.log("LocationServicePresenter in onLocationResult() - internet is not working");
-                        disposables.add(dbWorker.insertLocation(location)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(() -> logger.log("LocationServicePresenter insert location - success"), throwable -> logger.log("LocationServicePresenter insert location - failure")));
+                        disposables.add(insertToDatabase(location));
                         service.scheduleJob();
                     }
                 }));
@@ -93,15 +87,11 @@ public class LocationServicePresenter implements LocationServiceContract.Present
         disposables.dispose();
     }
 
-    private void printDBSizeInLog() {
-        disposables.add(Observable.just(dbWorker)
-        .subscribeOn(Schedulers.io())
-        .observeOn(Schedulers.io())
-        .subscribe(databaseWorker -> {
-            final int size = databaseWorker.getAllLocations().size();
-            logger.log("LocationServicePresenter in printDBSizeInLog() DB size = " + size);
-        }));
-
+    public Disposable insertToDatabase(TrackedLocationSchema location){
+        return dbWorker.insertLocation(location)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> logger.log("LocationServicePresenter insert location - success"), throwable -> logger.log("LocationServicePresenter insert location - failure"));
     }
 }
 
