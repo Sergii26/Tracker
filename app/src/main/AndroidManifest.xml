@@ -14,21 +14,39 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        >
 
-        <receiver android:name=".service.ServiceInterruptReceiver"
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDMteczvakXlTlUy77H06uSHS4Y9o9dgHo"/>
+
+        <receiver
+            android:name=".service.ServiceInterruptReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-
                 <action android:name="com.practice.placetracker.action.INTERRUPT_SERVICE" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".ui.MainActivity">
+        <activity android:name=".ui.tracker.MainActivity"
+            android:icon="@drawable/log_out_white_icon"
+            android:label="@string/app_name"
+            android:taskAffinity="com.practice.tracker"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
+        <activity android:name=".ui.map.MainActivity"
+            android:icon="@drawable/gps_icon"
+            android:label="map"
+            android:taskAffinity="com.practice.map"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

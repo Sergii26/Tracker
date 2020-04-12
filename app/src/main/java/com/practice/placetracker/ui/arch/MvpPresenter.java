@@ -1,5 +1,8 @@
 package com.practice.placetracker.ui.arch;
 
+import com.practice.placetracker.model.logger.ILog;
+import com.practice.placetracker.model.logger.Logger;
+
 import androidx.annotation.CallSuper;
 import io.reactivex.disposables.CompositeDisposable;
 
@@ -10,6 +13,7 @@ import io.reactivex.disposables.CompositeDisposable;
  */
 
 public abstract class MvpPresenter<V extends Contract.View> implements Contract.Presenter<V> {
+    private final ILog logger = Logger.withTag("MyLog");
     protected final CompositeDisposable onStopDisposable = new CompositeDisposable();
     protected final CompositeDisposable onDestroyDisposable = new CompositeDisposable();
 
@@ -21,12 +25,14 @@ public abstract class MvpPresenter<V extends Contract.View> implements Contract.
     @Override
     @CallSuper
     public final void subscribe(V view) {
+        logger.log("MvpPresenter subscribe(v View)");
         this.view = view;
     }
 
     @Override
     @CallSuper
     public void unsubscribe() {
+        logger.log("MvpPresenter unsubscribe view == null");
         onStopDisposable.clear();
         view = null;
     }

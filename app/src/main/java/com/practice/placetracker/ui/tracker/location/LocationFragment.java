@@ -1,4 +1,4 @@
-package com.practice.placetracker.ui.location;
+package com.practice.placetracker.ui.tracker.location;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -15,9 +15,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.practice.placetracker.R;
+import com.practice.placetracker.model.cache.SessionCache;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
-import com.practice.placetracker.model.cache.SessionCache;
 import com.practice.placetracker.service.LocationService;
 import com.practice.placetracker.ui.arch.fragments.MvpFragment;
 
@@ -32,10 +32,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-import static com.practice.placetracker.service.LocationService.ACTION_SERVICE_IS_STOPPED;
 import static com.practice.placetracker.service.ServiceInterruptReceiver.ACTION_INTERRUPT_SERVICE;
 
 public class LocationFragment extends MvpFragment<LocationContract.Presenter, LocationContract.Host> implements LocationContract.View, android.view.View.OnClickListener {
+
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private final ILog logger = Logger.withTag("MyLog");
 

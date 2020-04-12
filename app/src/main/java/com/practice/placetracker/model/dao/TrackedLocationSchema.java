@@ -1,4 +1,4 @@
-package com.practice.placetracker.model.dao.location;
+package com.practice.placetracker.model.dao;
 
 import android.location.Location;
 
@@ -39,6 +39,11 @@ public class TrackedLocationSchema {
         this.userEmail = userEmail;
     }
 
+    @Ignore
+    public TrackedLocationSchema(){
+
+    }
+
     public long getUniqueId() {
         return uniqueId;
     }
@@ -51,7 +56,7 @@ public class TrackedLocationSchema {
         return latitude;
     }
 
-    public void setLatitude(int latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
@@ -59,7 +64,7 @@ public class TrackedLocationSchema {
         return longitude;
     }
 
-    public void setLongitude(int longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
@@ -67,7 +72,7 @@ public class TrackedLocationSchema {
         return time;
     }
 
-    public void setTime(int time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -75,7 +80,7 @@ public class TrackedLocationSchema {
         return accuracy;
     }
 
-    public void setAccuracy(int accuracy) {
+    public void setAccuracy(float accuracy) {
         this.accuracy = accuracy;
     }
 

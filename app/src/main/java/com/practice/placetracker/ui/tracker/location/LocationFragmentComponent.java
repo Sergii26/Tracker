@@ -1,4 +1,4 @@
-package com.practice.placetracker.ui.location;
+package com.practice.placetracker.ui.tracker.location;
 
 import dagger.Component;
 

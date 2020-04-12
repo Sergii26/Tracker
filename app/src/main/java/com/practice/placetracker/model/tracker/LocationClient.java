@@ -43,7 +43,6 @@ public class LocationClient implements LocationsSupplier {
         timeLocationProvider = LocationServices.getFusedLocationProviderClient(context);
         distanceLocationProvider = LocationServices.getFusedLocationProviderClient(context);
 
-
         timeLocationRequest = LocationRequest.create();
         logger.log("LocationClient in createLocationRequestByTime()");
         timeLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);

@@ -15,7 +15,7 @@ import com.practice.placetracker.R;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.service.job.ScheduledJobService;
-import com.practice.placetracker.ui.MainActivity;
+import com.practice.placetracker.ui.tracker.MainActivity;
 
 import javax.inject.Inject;
 

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.practice.placetracker.R;
+import com.practice.placetracker.model.logger.ILog;
+import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.ui.arch.Contract;
 
 import java.lang.reflect.ParameterizedType;

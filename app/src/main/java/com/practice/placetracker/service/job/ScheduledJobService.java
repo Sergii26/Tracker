@@ -47,7 +47,7 @@ public class ScheduledJobService extends JobService {
         logger.log("ScheduledJobService in onStartJob");
         final AppComponent appComponent = App.getInstance().getAppComponent();
         final LocationsNetwork locationsNetwork = appComponent.getLocationsNetwork();
-        disposables.add(Observable.just(appComponent.provideDatabaseWorker())
+        disposables.add(Observable.just(appComponent.provideLocationDatabaseWorker())
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .doOnNext(worker -> logger.log("ScheduledSenderService in handleActionSendToDatabase"))

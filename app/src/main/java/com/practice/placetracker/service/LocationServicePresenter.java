@@ -1,18 +1,20 @@
 package com.practice.placetracker.service;
 
 import com.practice.placetracker.model.cache.SessionCache;
-import com.practice.placetracker.model.dao.location.DatabaseWorker;
-import com.practice.placetracker.model.dao.location.TrackedLocationSchema;
+import com.practice.placetracker.model.dao.location.LocationDatabaseWorker;
+import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
 import com.practice.placetracker.model.prefs.Prefs;
 import com.practice.placetracker.model.tracker.LocationsSupplier;
+import com.practice.placetracker.model.tracker.TrackingResult;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.schedulers.Schedulers;
 
 public class LocationServicePresenter implements LocationServiceContract.Presenter {
@@ -28,10 +30,10 @@ public class LocationServicePresenter implements LocationServiceContract.Present
     private final LocationsSupplier locationsSupplier;
     private final SessionCache sessionCache;
     private final LocationsNetwork network;
-    private final DatabaseWorker dbWorker;
+    private final LocationDatabaseWorker dbWorker;
 
     public LocationServicePresenter(LocationServiceContract.Service service, LocationsSupplier locationsSupplier,
-                                    DatabaseWorker dbWorker, SessionCache sessionCache, Prefs prefs, LocationsNetwork network) {
+                                    LocationDatabaseWorker dbWorker, SessionCache sessionCache, Prefs prefs, LocationsNetwork network) {
         this.locationsSupplier = locationsSupplier;
         this.sessionCache = sessionCache;
         this.dbWorker = dbWorker;
@@ -51,10 +53,13 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                         .observeOn(AndroidSchedulers.mainThread()),
 
                 locationsSupplier.getLocationsObservable(),
-                (email, locationResult) -> {
-                    logger.log("LocationServicePresenter in onLocationResult() " + locationResult.getType());
-                    sessionCache.updateSession(locationResult.getType());
-                    return new TrackedLocationSchema(locationResult.getLocation(), false, email);
+                new BiFunction<String, TrackingResult, TrackedLocationSchema>() {
+                    @Override
+                    public TrackedLocationSchema apply(String email, TrackingResult locationResult) throws Exception {
+                        logger.log("LocationServicePresenter in onLocationResult() " + locationResult.getType());
+                        sessionCache.updateSession(locationResult.getType());
+                        return new TrackedLocationSchema(locationResult.getLocation(), false, email);
+                    }
                 })
                 .subscribe(location -> {
                     if (service.isConnectedToNetwork()) {

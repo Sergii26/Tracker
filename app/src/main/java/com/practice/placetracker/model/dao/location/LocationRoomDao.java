@@ -1,5 +1,7 @@
 package com.practice.placetracker.model.dao.location;
 
+import com.practice.placetracker.model.dao.TrackedLocationSchema;
+
 import java.util.List;
 
 import androidx.room.Dao;

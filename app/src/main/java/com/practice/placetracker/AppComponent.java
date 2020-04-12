@@ -1,14 +1,16 @@
 package com.practice.placetracker;
 
 import com.practice.placetracker.model.cache.SessionCache;
-import com.practice.placetracker.model.dao.location.DaoWorker;
-import com.practice.placetracker.model.dao.location.DatabaseWorker;
+import com.practice.placetracker.model.dao.location.LocationDaoWorker;
 import com.practice.placetracker.model.dao.location.LocationDao;
+import com.practice.placetracker.model.dao.map.MapDao;
+import com.practice.placetracker.model.dao.map.MapDaoWorker;
 import com.practice.placetracker.model.network.auth.AuthNetwork;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
 import com.practice.placetracker.model.prefs.Prefs;
 import com.practice.placetracker.model.tracker.LocationsSupplier;
-import com.practice.placetracker.ui.location.LocationFragmentModule;
+import com.practice.placetracker.ui.map.map.MapFragmentModule;
+import com.practice.placetracker.ui.tracker.location.LocationFragmentModule;
 
 import javax.inject.Singleton;
 
@@ -19,6 +21,8 @@ import dagger.Component;
 public interface AppComponent {
 
     void injectLocationFragment(LocationFragmentModule module);
+
+    void injectMapFragment(MapFragmentModule module);
 
     AuthNetwork getAuthNetwork();
 
@@ -32,7 +36,11 @@ public interface AppComponent {
 
     LocationDao getLocationDao();
 
-    DaoWorker provideDatabaseWorker();
+    MapDao getMapDao();
+
+    LocationDaoWorker provideLocationDatabaseWorker();
+
+    MapDaoWorker provideMapDatabaseWorker();
 }
 
 

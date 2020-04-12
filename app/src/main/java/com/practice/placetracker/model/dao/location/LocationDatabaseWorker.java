@@ -1,17 +1,18 @@
 package com.practice.placetracker.model.dao.location;
 
+import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.logger.ILog;
 
 import java.util.List;
 
 import io.reactivex.Completable;
 
-public class DatabaseWorker implements DaoWorker {
+public class LocationDatabaseWorker implements LocationDaoWorker {
 
     private final ILog logger;
     private final LocationDao database;
 
-    public DatabaseWorker(LocationDao database, ILog logger) {
+    public LocationDatabaseWorker(LocationDao database, ILog logger) {
         this.logger = logger;
         this.database = database;
     }

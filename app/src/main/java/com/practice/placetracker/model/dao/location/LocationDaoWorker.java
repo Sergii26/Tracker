@@ -1,10 +1,12 @@
 package com.practice.placetracker.model.dao.location;
 
+import com.practice.placetracker.model.dao.TrackedLocationSchema;
+
 import java.util.List;
 
 import io.reactivex.Completable;
 
-public interface DaoWorker {
+public interface LocationDaoWorker {
 
     List<TrackedLocationSchema> getAllLocations();
 
