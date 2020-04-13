@@ -1,5 +1,6 @@
 package com.practice.placetracker.ui.map.map;
 
+import com.google.common.base.Optional;
 import com.practice.placetracker.R;
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.dao.map.MapDaoWorker;
@@ -81,16 +82,12 @@ public class MapPresenter extends MvpPresenter<MapContract.View> implements MapC
     }
 
     private void showLocationsAndAddToDatabase() {
-        onStopDisposable.add(Single.fromCallable(() -> {
-            TrackedLocationSchema location = dbWorker.getLastLocation(prefs.getEmail());
-            if (location == null) {
-                // if location == null => database is empty so download all locations (locations with field "time" greater than 0)
-                location = new TrackedLocationSchema(0, 0, 0, 0, 0, false, prefs.getEmail());
-            }
-            return location;
-        })
-                .flatMap((Function<TrackedLocationSchema, Single<Result<List<TrackedLocationSchema>>>>) trackedLocationSchema -> locationNetwork
-                        .getLocationsWhereTimeGreaterThen(prefs.getEmail(), trackedLocationSchema.getTime()))
+        onStopDisposable.add(dbWorker.getLastLocation(prefs.getEmail())
+                .flatMap((Function<Optional<TrackedLocationSchema>, Single<Result<List<TrackedLocationSchema>>>>) listOptional -> {
+                    final long time = listOptional.isPresent() ? listOptional.get().getTime() : 0;
+                    // if location == null => database is empty so download all locations (locations with field "time" greater than 0)
+                    return locationNetwork.getLocationsWhereTimeGreaterThen(prefs.getEmail(), time);
+                })
                 .map(listResult -> {
                     if (listResult.isFail()) {
                         logger.log("MapPresenter showLocationsAndInsertToDatabase() in listResult error: " + listResult.getError().getMessage());
@@ -116,7 +113,7 @@ public class MapPresenter extends MvpPresenter<MapContract.View> implements MapC
 
     private void showLocationsFromDatabase() {
         logger.log("MapPresenter showLocationsFromDatabase()");
-        onStopDisposable.add(Single.fromCallable(() -> dbWorker.getAllUserLocations(prefs.getEmail()))
+        onStopDisposable.add(dbWorker.getAllUserLocations(prefs.getEmail())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(trackedLocationSchemas -> {
@@ -135,6 +132,10 @@ public class MapPresenter extends MvpPresenter<MapContract.View> implements MapC
 
     public TrackedLocationSchema getLastLocation() {
         return lastLocation;
+    }
+
+    public void deleteMarker(){
+        view.removeMarker();
     }
 
     @Override

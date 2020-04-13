@@ -1,11 +1,15 @@
 package com.practice.placetracker.model.dao.map;
 
+import com.google.common.base.Optional;
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.logger.ILog;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.functions.Function;
 
 public class MapDatabaseWorker implements MapDaoWorker {
     private final ILog logger;
@@ -16,9 +20,9 @@ public class MapDatabaseWorker implements MapDaoWorker {
         this.database = database;
     }
 
-    public List<TrackedLocationSchema> getAllUserLocations(String userEmail) {
+    public Single<List<TrackedLocationSchema>> getAllUserLocations(String userEmail) {
         logger.log("MapDatabaseWorker getAllUserLocations()");
-        return database.mapDao().getAllUserLocations(userEmail);
+        return Single.fromCallable(() -> database.mapDao().getAllUserLocations(userEmail));
     }
 
     public Completable insertLocation(List<TrackedLocationSchema> locations) {
@@ -26,14 +30,16 @@ public class MapDatabaseWorker implements MapDaoWorker {
         return database.mapDao().insertLocation(locations);
     }
 
-    public TrackedLocationSchema getLastLocation(String userEmail){
+    public Single<Optional<TrackedLocationSchema>> getLastLocation(String userEmail) {
         logger.log("MapDatabaseWorker getLastLocation()");
-        final List<TrackedLocationSchema> locations = database.mapDao().getLastLocation(userEmail);
-        if(locations.isEmpty()){
-            return null;
-        } else {
-            return locations.get(0);
-        }
+        return Single.fromCallable(() -> database.mapDao().getLastLocation(userEmail))
+                .map(trackedLocationSchemas -> {
+                    if (trackedLocationSchemas.isEmpty()) {
+                        return Optional.absent();
+                    } else {
+                        return Optional.of(trackedLocationSchemas.get(0));
+                    }
+                });
     }
 
 }

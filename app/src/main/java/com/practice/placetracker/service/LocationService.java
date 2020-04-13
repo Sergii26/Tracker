@@ -14,8 +14,11 @@ import android.os.IBinder;
 import com.practice.placetracker.R;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
+import com.practice.placetracker.model.utils.AndroidUtil;
 import com.practice.placetracker.service.job.ScheduledJobService;
 import com.practice.placetracker.ui.tracker.MainActivity;
+
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -103,16 +106,7 @@ public class LocationService extends android.app.Service implements LocationServ
 
     @Override
     public boolean isConnectedToNetwork() {
-        final ConnectivityManager connectivityManager =
-                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        boolean isConnected = false;
-        if (connectivityManager != null) {
-            final NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-            isConnected = (activeNetwork != null) && (activeNetwork.isConnectedOrConnecting());
-        }
-        logger.log("LocationService in isConnectedToNetwork() return - " + isConnected);
-        return isConnected;
+            return AndroidUtil.isConnectedToNetwork(Objects.requireNonNull(this));
     }
 
     public void sendIntentToFragment() {

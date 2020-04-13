@@ -19,6 +19,8 @@ public interface MapContract {
         void setCameraPosition(TrackedLocationSchema location, int zoom);
 
         boolean isConnectedToNetwork();
+
+        void removeMarker();
     }
 
     interface Presenter extends Contract.Presenter<View> {
@@ -33,6 +35,8 @@ public interface MapContract {
         void setLastLocation(TrackedLocationSchema location);
 
         TrackedLocationSchema getLastLocation();
+
+        void deleteMarker();
     }
 
     interface Host extends Contract.Host {

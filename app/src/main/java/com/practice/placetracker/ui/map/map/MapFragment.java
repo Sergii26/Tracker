@@ -7,8 +7,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,11 +23,16 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CustomCap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.practice.placetracker.App;
 import com.practice.placetracker.R;
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
+import com.practice.placetracker.model.dao.map.MapDaoWorker;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
+import com.practice.placetracker.model.utils.AndroidUtil;
 import com.practice.placetracker.ui.arch.fragments.MvpFragment;
 
 import java.util.List;
@@ -39,6 +42,9 @@ import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.Host>
         implements MapContract.View, OnMapReadyCallback {
@@ -47,6 +53,7 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
 
     private MapView mapView;
     private GoogleMap googleMap;
+    private Marker marker;
 
     @Inject
     MapContract.Presenter presenter;
@@ -56,7 +63,6 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
         public void onReceive(Context context, Intent intent) {
             logger.log("MapFragment receiver");
             presenter.onNetworkConnectionChange();
-
         }
     };
 
@@ -103,6 +109,8 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
     public void onPause() {
         logger.log("MapFragment in onPause()");
         Objects.requireNonNull(getActivity()).unregisterReceiver(receiver);
+        presenter.deleteMarker();
+        presenter.setLastLocation(null);
         super.onPause();
         mapView.onPause();
     }
@@ -158,8 +166,10 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
 
     public void addPolylines(List<TrackedLocationSchema> locations) {
         logger.log("MapFragment addPolylines() size: " + locations.size());
-        CustomCap cc = new CustomCap(BitmapDescriptorFactory.fromBitmap(getDrawableAsBitmap()), 25);
+        presenter.deleteMarker();
+        CustomCap cc = new CustomCap(BitmapDescriptorFactory.fromBitmap(getDrawableAsBitmap()), 12);
         if(presenter.getLastLocation() != null){
+            logger.log("MapFragment addPolylines() lastLocation = " + presenter.getLastLocation().getLatitude());
             // for concat existing polylines with new locations
             locations.add(0, presenter.getLastLocation());
         }
@@ -168,10 +178,19 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
             rectOptions.add(new LatLng(locations.get(i).getLatitude(), locations.get(i).getLongitude()))
                     .add(new LatLng(locations.get(i + 1).getLatitude(), locations.get(i + 1).getLongitude()))
                     .startCap(cc)
-                    .width(20);
+                    .width(12);
             googleMap.addPolyline(rectOptions);
         }
-        presenter.setLastLocation(locations.get(locations.size() - 1));
+        TrackedLocationSchema lastLocation = locations.get(locations.size() - 1);
+        presenter.setLastLocation(lastLocation);
+        marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()))
+                .icon(BitmapDescriptorFactory.fromBitmap(getDrawableAsBitmap())));
+    }
+
+    public void removeMarker(){
+        if(marker != null){
+            marker.remove();
+        }
     }
 
     private Bitmap getDrawableAsBitmap() {
@@ -203,16 +222,7 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
 
     @Override
     public boolean isConnectedToNetwork() {
-        final ConnectivityManager connectivityManager =
-                (ConnectivityManager) Objects.requireNonNull(getActivity()).getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        boolean isConnected = false;
-        if (connectivityManager != null) {
-            final NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-            isConnected = (activeNetwork != null) && (activeNetwork.isConnectedOrConnecting());
-        }
-        logger.log("MapFragment isConnectedToNetwork() return: " + isConnected);
-        return isConnected;
+        return AndroidUtil.isConnectedToNetwork(Objects.requireNonNull(getActivity()));
     }
 
     public void registerReceiver(){

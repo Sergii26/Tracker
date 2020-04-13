@@ -1,17 +1,19 @@
 package com.practice.placetracker.model.dao.map;
 
+import com.google.common.base.Optional;
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
 
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public interface MapDaoWorker {
 
-    List<TrackedLocationSchema> getAllUserLocations(String userEmail);
+    Single<List<TrackedLocationSchema>> getAllUserLocations(String userEmail);
 
     Completable insertLocation(List<TrackedLocationSchema> location);
 
-    TrackedLocationSchema getLastLocation(String userEmail);
+    Single<Optional<TrackedLocationSchema>> getLastLocation(String userEmail);
 
 }
