@@ -54,16 +54,16 @@ public class MapPresenterTest {
 
     @Before
     public void setupPresenter(){
-        logger = mock(Logger.class);
-        authNetwork = mock(FirebaseAuthNetwork.class);
-        locationNetwork = mock(FirebaseLocationsNetwork.class);
-        prefs = mock(PrefsImpl.class);
-        dbWorker = mock(MapDatabaseWorker.class);
+        logger = mock(ILog.class);
+        authNetwork = mock(AuthNetwork.class);
+        locationNetwork = mock(LocationsNetwork.class);
+        prefs = mock(Prefs.class);
+        dbWorker = mock(MapDaoWorker.class);
         view = mock(MapFragment.class);
-
         presenter = new MapPresenter(authNetwork, locationNetwork, prefs, dbWorker, logger);
         presenter.subscribe(view);
     }
+
     @After
     public void clearPresenter(){
         presenter.unsubscribe();

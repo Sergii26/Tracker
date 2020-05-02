@@ -31,5 +31,12 @@
     <string name="btnShow">Show</string>
     <string name="dialog_message">Sign in</string>
     <string name="marker_title">Last location</string>
+    <string name="timer_two_seconds">0:00:02</string>
+    <string name="number_two">2</string>
+    <string name="number_one">1</string>
+    <string name="number_zero">0</string>
+    <string name="password_for_tests">password</string>
+    <string name="email_for_test">test@test.ua</string>
+    <string name="not_exsisted_email_for_test">notExsistedUser@test.ua</string>
 
 </resources>

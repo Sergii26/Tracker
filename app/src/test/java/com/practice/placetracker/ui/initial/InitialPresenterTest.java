@@ -27,8 +27,8 @@ public class InitialPresenterTest {
 
     @Before
     public void initPresenter() {
-        logger = Mockito.mock(Logger.class);
-        prefs = Mockito.mock(PrefsImpl.class);
+        logger = Mockito.mock(ILog.class);
+        prefs = Mockito.mock(Prefs.class);
         view = Mockito.mock(InitialFragment.class);
         presenter = new InitialPresenter(prefs, logger);
         presenter.subscribe(view);

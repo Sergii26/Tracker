@@ -39,9 +39,9 @@ public class AuthPresenterLoginModeTest {
 
     @Before
     public void initPresenter() {
-        network = Mockito.mock(FirebaseAuthNetwork.class);
-        prefs = Mockito.mock(PrefsImpl.class);
-        view = Mockito.mock(AuthFragment.class);
+        network = Mockito.mock(AuthNetwork.class);
+        prefs = Mockito.mock(Prefs.class);
+        view = Mockito.mock(AuthContract.View.class);
         presenter = new AuthPresenter(network, prefs, mode);
         presenter.subscribe(view);
 

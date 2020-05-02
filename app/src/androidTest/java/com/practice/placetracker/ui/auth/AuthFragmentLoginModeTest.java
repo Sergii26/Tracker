@@ -29,7 +29,7 @@ public class AuthFragmentLoginModeTest {
 
     @Test
     public void viewsAreShownTest(){
-        onView(allOf(withId(R.id.btnLogin), withText("Login"))).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.btnLogin), withText(R.string.label_login))).check(matches(isDisplayed()));
         onView(withId(R.id.etEmail)).check(matches(isDisplayed()));
         onView(withId(R.id.etPassword)).check(matches(isDisplayed()));
     }
@@ -46,7 +46,7 @@ public class AuthFragmentLoginModeTest {
         onView(withId(R.id.etEmail)).perform(click());
         onView(withId(R.id.etEmail))
                 .check(matches(hasErrorText(mActivityRule.getActivity().getString(R.string.username_is_empty))));
-        onView(withId(R.id.etEmail)).perform(typeText("email"));
+        onView(withId(R.id.etEmail)).perform(typeText(mActivityRule.getActivity().getString(R.string.email_for_test)));
         onView(withId(R.id.etEmail))
                 .check(matches(not(hasErrorText(mActivityRule.getActivity().getString(R.string.username_is_empty)))));
     }
@@ -63,15 +63,15 @@ public class AuthFragmentLoginModeTest {
         onView(withId(R.id.etPassword)).perform(click());
         onView(withId(R.id.etPassword))
                 .check(matches(hasErrorText(mActivityRule.getActivity().getString(R.string.password_too_short))));
-        onView(withId(R.id.etPassword)).perform(typeText("password"));
+        onView(withId(R.id.etPassword)).perform(typeText(mActivityRule.getActivity().getString(R.string.password_for_tests)));
         onView(withId(R.id.etPassword))
                 .check(matches(not(hasErrorText(mActivityRule.getActivity().getString(R.string.password_too_short)))));
     }
 
     @Test
     public void progressDialogIsShown(){
-        onView(withId(R.id.etEmail)).perform(typeText("test@test.ua"));
-        onView(withId(R.id.etPassword)).perform(typeText("password"));
+        onView(withId(R.id.etEmail)).perform(typeText(mActivityRule.getActivity().getString(R.string.email_for_test)));
+        onView(withId(R.id.etPassword)).perform(typeText(mActivityRule.getActivity().getString(R.string.password_for_tests)));
         onView(withId(R.id.btnLogin)).perform(click());
         onView(withText(R.string.dialog_message)).inRoot(isDialog()).check(matches(isDisplayed()));
         try {
@@ -83,8 +83,8 @@ public class AuthFragmentLoginModeTest {
 
     @Test
     public void locationFragmentIsShown(){
-        onView(withId(R.id.etEmail)).perform(typeText("test@test.ua"));
-        onView(withId(R.id.etPassword)).perform(typeText("password"));
+        onView(withId(R.id.etEmail)).perform(typeText(mActivityRule.getActivity().getString(R.string.email_for_test)));
+        onView(withId(R.id.etPassword)).perform(typeText(mActivityRule.getActivity().getString(R.string.password_for_tests)));
         onView(withId(R.id.btnLogin)).perform(click());
         try {
             Thread.sleep(1300);
@@ -96,8 +96,8 @@ public class AuthFragmentLoginModeTest {
 
     @Test
     public void errorIsShownWithInvalidUser(){
-        onView(withId(R.id.etEmail)).perform(typeText("notExsistedUser@test.ua"));
-        onView(withId(R.id.etPassword)).perform(typeText("password"));
+        onView(withId(R.id.etEmail)).perform(typeText(mActivityRule.getActivity().getString(R.string.not_exsisted_email_for_test)));
+        onView(withId(R.id.etPassword)).perform(typeText(mActivityRule.getActivity().getString(R.string.password_for_tests)));
         onView(withId(R.id.btnLogin)).perform(click());
         try {
             Thread.sleep(1000);

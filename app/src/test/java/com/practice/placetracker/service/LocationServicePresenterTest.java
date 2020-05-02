@@ -5,6 +5,7 @@ import android.location.Location;
 import com.practice.placetracker.model.cache.SessionCache;
 import com.practice.placetracker.model.cache.SessionCacheImpl;
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
+import com.practice.placetracker.model.dao.location.LocationDaoWorker;
 import com.practice.placetracker.model.dao.location.LocationDatabaseWorker;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
@@ -34,7 +35,7 @@ public class LocationServicePresenterTest {
     private LocationServiceContract.Presenter presenter;
     private LocationServiceContract.Service service;
     private LocationsSupplier locationsSupplier;
-    private LocationDatabaseWorker dbWorker;
+    private LocationDaoWorker dbWorker;
     private SessionCache sessionCache;
     private Prefs prefs;
     private LocationsNetwork network;
@@ -49,13 +50,13 @@ public class LocationServicePresenterTest {
 
     @Before
     public void initPresenter() {
-        service = Mockito.mock(LocationService.class);
-        locationsSupplier = Mockito.mock(LocationClient.class);
-        dbWorker = Mockito.mock(LocationDatabaseWorker.class);
-        sessionCache = Mockito.mock(SessionCacheImpl.class);
-        prefs = Mockito.mock(PrefsImpl.class);
-        network = Mockito.mock(FirebaseLocationsNetwork.class);
-        logger = Mockito.mock(Logger.class);
+        service = Mockito.mock(LocationServiceContract.Service.class);
+        locationsSupplier = Mockito.mock(LocationsSupplier.class);
+        dbWorker = Mockito.mock(LocationDaoWorker.class);
+        sessionCache = Mockito.mock(SessionCache.class);
+        prefs = Mockito.mock(Prefs.class);
+        network = Mockito.mock(LocationsNetwork.class);
+        logger = Mockito.mock(ILog.class);
 
         Mockito.when(dbWorker.insertLocation(Mockito.any())).thenReturn(Completable.fromSingle(Single.just("")));
         Mockito.when(prefs.getEmail()).thenReturn("");

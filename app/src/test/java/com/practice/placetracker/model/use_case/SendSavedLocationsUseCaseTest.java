@@ -2,12 +2,10 @@ package com.practice.placetracker.model.use_case;
 
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.dao.location.LocationDaoWorker;
-import com.practice.placetracker.model.dao.location.LocationDatabaseWorker;
 import com.practice.placetracker.model.logger.ILog;
-import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.model.network.Result;
-import com.practice.placetracker.model.network.location.FirebaseLocationsNetwork;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
+import com.practice.placetracker.model.use_case.sender.SendSavedLocationsUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
-import io.reactivex.observers.TestObserver;
-import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -32,13 +29,13 @@ public class SendSavedLocationsUseCaseTest {
     private LocationDaoWorker dbWorker;
     private ILog logger;
 
-    private SavedLocationsSender sender;
+    private UseCase<Void, Observable<Result<Boolean>>> sender;
 
     @Before
     public void initSender(){
-        locationsNetwork = Mockito.mock(FirebaseLocationsNetwork.class);
-        dbWorker = Mockito.mock(LocationDatabaseWorker.class);
-        logger = Mockito.mock(Logger.class);
+        locationsNetwork = Mockito.mock(LocationsNetwork.class);
+        dbWorker = Mockito.mock(LocationDaoWorker.class);
+        logger = Mockito.mock(ILog.class);
         sender = new SendSavedLocationsUseCase(locationsNetwork, dbWorker, logger);
     }
 
@@ -51,7 +48,7 @@ public class SendSavedLocationsUseCaseTest {
         Mockito.when(dbWorker.deleteLocation(Mockito.any(TrackedLocationSchema.class))).thenReturn(Completable.complete());
         Mockito.when(locationsNetwork.sendLocation(Mockito.any(TrackedLocationSchema.class))).thenReturn(Single.just(result));
 
-        sender.sendSavedLocations().subscribe(new Consumer<Result<Boolean>>() {
+        sender.execute(null).subscribe(new Consumer<Result<Boolean>>() {
             @Override
             public void accept(Result<Boolean> booleanResult) throws Exception {
                 assertFalse(booleanResult.getData());
@@ -72,7 +69,7 @@ public class SendSavedLocationsUseCaseTest {
         Mockito.when(dbWorker.getLocationsBySent(false)).thenReturn(locations);
         Mockito.when(dbWorker.deleteLocation(Mockito.any(TrackedLocationSchema.class))).thenReturn(Completable.complete());
         Mockito.when(locationsNetwork.sendLocation(Mockito.any(TrackedLocationSchema.class))).thenReturn(Single.just(result));
-        sender.sendSavedLocations().subscribe();
+        sender.execute(null).subscribe();
         Mockito.verify(dbWorker, Mockito.times(1)).getLocationsBySent(false);
         Mockito.verify(locationsNetwork, Mockito.times(1)).sendLocation(Mockito.any(TrackedLocationSchema.class));
         Mockito.verify(dbWorker, Mockito.times(1)).deleteLocation(Mockito.any(TrackedLocationSchema.class));
@@ -90,7 +87,7 @@ public class SendSavedLocationsUseCaseTest {
         Mockito.when(dbWorker.getLocationsBySent(false)).thenReturn(locations);
         Mockito.when(dbWorker.deleteLocation(Mockito.any(TrackedLocationSchema.class))).thenReturn(Completable.complete());
         Mockito.when(locationsNetwork.sendLocation(Mockito.any(TrackedLocationSchema.class))).thenReturn(Single.just(result));
-        sender.sendSavedLocations().subscribe();
+        sender.execute(null).subscribe();
         Mockito.verify(dbWorker, Mockito.times(1)).getLocationsBySent(false);
         Mockito.verify(locationsNetwork, Mockito.times(3)).sendLocation(Mockito.any(TrackedLocationSchema.class));
         Mockito.verify(dbWorker, Mockito.times(3)).deleteLocation(Mockito.any(TrackedLocationSchema.class));

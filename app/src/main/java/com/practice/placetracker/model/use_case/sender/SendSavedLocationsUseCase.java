@@ -1,10 +1,11 @@
-package com.practice.placetracker.model.use_case;
+package com.practice.placetracker.model.use_case.sender;
 
 import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.dao.location.LocationDaoWorker;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.network.Result;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
+import com.practice.placetracker.model.use_case.UseCase;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
-public class SendSavedLocationsUseCase implements SavedLocationsSender {
+public class SendSavedLocationsUseCase implements UseCase<Void, Observable<Result<Boolean>>> {
     private final LocationsNetwork locationsNetwork;
     private final LocationDaoWorker dbWorker;
     private ILog logger;
@@ -25,7 +26,8 @@ public class SendSavedLocationsUseCase implements SavedLocationsSender {
         this.logger = logger;
     }
 
-    public Observable<Result<Boolean>> sendSavedLocations(){
+    @Override
+    public Observable<Result<Boolean>> execute(Void aVoid){
         return Observable.fromCallable(() -> {
             List<TrackedLocationSchema> locations = dbWorker.getLocationsBySent(false);
             for(int i = 0; i < locations.size(); i++){
@@ -52,4 +54,7 @@ public class SendSavedLocationsUseCase implements SavedLocationsSender {
                             }
                         }));
     }
+
+
+
 }

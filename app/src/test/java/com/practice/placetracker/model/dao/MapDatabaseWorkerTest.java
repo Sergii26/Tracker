@@ -3,6 +3,7 @@ package com.practice.placetracker.model.dao;
 import com.google.common.base.Optional;
 import com.practice.placetracker.model.dao.map.MapDatabaseWorker;
 import com.practice.placetracker.model.dao.map.MapRoomDao;
+import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
 
 import org.junit.Before;
@@ -18,14 +19,14 @@ public class MapDatabaseWorkerTest {
 
     private MapDatabaseWorker dbWorker;
     private MapRoomDao mapRoomDao;
-    private Logger logger;
+    private ILog logger;
     private List<TrackedLocationSchema> locations;
 
     @Before
     public void initWorker(){
         locations = new ArrayList<>();
         mapRoomDao = Mockito.mock(MapRoomDao.class);
-        logger = Mockito.mock(Logger.class);
+        logger = Mockito.mock(ILog.class);
         dbWorker = new MapDatabaseWorker(mapRoomDao, logger);
         Mockito.when(mapRoomDao.getLastLocation("")).thenReturn(locations);
     }

@@ -8,15 +8,13 @@ import android.content.ComponentName;
 import android.content.Context;
 
 import com.practice.placetracker.App;
-import com.practice.placetracker.AppComponent;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.model.network.Result;
-import com.practice.placetracker.model.use_case.SavedLocationsSender;
-import com.practice.placetracker.model.use_case.SendSavedLocationsUseCase;
+import com.practice.placetracker.model.use_case.UseCase;
 
+import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class ScheduledJobService extends JobService {
@@ -45,8 +43,8 @@ public class ScheduledJobService extends JobService {
     @Override
     public boolean onStartJob(JobParameters params) {
         logger.log("ScheduledJobService in onStartJob");
-        final SavedLocationsSender sender = App.getInstance().getAppComponent().provideSendSaveLocationsUseCase();
-        disposables.add(sender.sendSavedLocations()
+        final UseCase<Void, Observable<Result<Boolean>>> sender =  App.getInstance().getAppComponent().provideSendSaveLocationsUseCase();
+        disposables.add(sender.execute(null)
                 .subscribeOn(Schedulers.io())
                 .subscribe(booleanResult -> {
                     logger.log("ScheduledJobService in onStartJob result: " + booleanResult.getData());

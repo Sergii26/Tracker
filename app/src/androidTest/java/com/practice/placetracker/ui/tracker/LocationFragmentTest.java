@@ -49,11 +49,11 @@ public class LocationFragmentTest {
     public void viewsAreShownWithInitialValue(){
         onView(withId(R.id.btnStart)).check(matches(isEnabled()));
         onView(withId(R.id.btnStop)).check(matches(not(isEnabled())));
-        onView(withId(R.id.tvTime)).check(matches(withText("0:00:00")));
+        onView(withId(R.id.tvTime)).check(matches(withText(R.string.default_time)));
 
-        onView(withId(R.id.tvLocationsCount)).check(matches(withText("0")));
-        onView(withId(R.id.tvLocationsByDistance)).check(matches(withText("0")));
-        onView(withId(R.id.tvLocationsByTime)).check(matches(withText("0")));
+        onView(withId(R.id.tvLocationsCount)).check(matches(withText(R.string.number_zero)));
+        onView(withId(R.id.tvLocationsByDistance)).check(matches(withText(R.string.number_zero)));
+        onView(withId(R.id.tvLocationsByTime)).check(matches(withText(R.string.number_zero)));
     }
 
     @Test
@@ -66,11 +66,11 @@ public class LocationFragmentTest {
         }
         onView(withId(R.id.btnStop)).check(matches(isEnabled()));
         onView(withId(R.id.btnStart)).check(matches(not(isEnabled())));
-        onView(withId(R.id.tvTime)).check(matches(withText("0:00:02")));
+        onView(withId(R.id.tvTime)).check(matches(withText(R.string.timer_two_seconds)));
 
-        onView(withId(R.id.tvLocationsCount)).check(matches(withText("2")));
-        onView(withId(R.id.tvLocationsByDistance)).check(matches(withText("1")));
-        onView(withId(R.id.tvLocationsByTime)).check(matches(withText("1")));
+        onView(withId(R.id.tvLocationsCount)).check(matches(withText(R.string.number_two)));
+        onView(withId(R.id.tvLocationsByDistance)).check(matches(withText(R.string.number_one)));
+        onView(withId(R.id.tvLocationsByTime)).check(matches(withText(R.string.number_one)));
 
         returnInitialState();
     }
@@ -99,9 +99,9 @@ public class LocationFragmentTest {
         onView(withId(R.id.btnStop)).check(matches(isEnabled()));
         onView(withId(R.id.btnStart)).check(matches(not(isEnabled())));
         onView(withId(R.id.tvTime)).check(matches(withText("0:00:03")));
-        onView(withId(R.id.tvLocationsCount)).check(matches(withText("2")));
-        onView(withId(R.id.tvLocationsByDistance)).check(matches(withText("1")));
-        onView(withId(R.id.tvLocationsByTime)).check(matches(withText("1")));
+        onView(withId(R.id.tvLocationsCount)).check(matches(withText(R.string.number_two)));
+        onView(withId(R.id.tvLocationsByDistance)).check(matches(withText(R.string.number_one)));
+        onView(withId(R.id.tvLocationsByTime)).check(matches(withText(R.string.number_one)));
 
         returnInitialState();
     }

@@ -7,6 +7,7 @@ import com.practice.placetracker.App;
 import com.practice.placetracker.AppComponent;
 import com.practice.placetracker.DaggerAppComponent;
 import com.practice.placetracker.DaggerAppTestComponent;
+import com.practice.placetracker.R;
 import com.practice.placetracker.model.logger.Logger;
 import com.practice.placetracker.ui.arch.HostActivity;
 import com.practice.placetracker.ui.map.map.MapFragment;
@@ -27,7 +28,7 @@ public class OpenMapFragmentTestRule<T extends Activity> extends ActivityTestRul
     @Override
     protected void afterActivityLaunched() {
         super.afterActivityLaunched();
-        App.getInstance().getAppComponent().getPrefs().putEmail("test@test.ua");
+        App.getInstance().getAppComponent().getPrefs().putEmail(getActivity().getString(R.string.email_for_test));
         activity = (HostActivity) getActivity();
         activity.addFragment(MapFragment.newInstance(), false, "map");
 

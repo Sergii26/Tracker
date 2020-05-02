@@ -44,10 +44,10 @@ public class LocationPresenterTest {
 
     @Before
     public void setupPresenter(){
-        logger = mock(Logger.class);
-        authNetwork = mock(FirebaseAuthNetwork.class);
-        sessionCache = mock(SessionCacheImpl.class);
-        prefs = mock(PrefsImpl.class);
+        logger = mock(ILog.class);
+        authNetwork = mock(AuthNetwork.class);
+        sessionCache = mock(SessionCache.class);
+        prefs = mock(Prefs.class);
         view = mock(LocationFragment.class);
 
         presenter = new LocationPresenter(sessionCache, authNetwork, logger, prefs);
@@ -115,7 +115,7 @@ public class LocationPresenterTest {
         verify(sessionCache).getTrackingStateObservable();
         verify(view).setButtonsState(true);
         verify(sessionCache).getLocationsCountObservable();
-        verify(view).updateTrackingInformation(Mockito.any(SessionCacheImpl.class));
+        verify(view).updateTrackingInformation(Mockito.any(SessionCache.class));
         verify(sessionCache).putStartTime(Mockito.any(Long.class));
         verify(sessionCache, Mockito.times(2)).getStartTime();
         verify(view).setTime(Mockito.anyString());
@@ -138,7 +138,7 @@ public class LocationPresenterTest {
         verify(sessionCache).getTrackingStateObservable();
         verify(view).setButtonsState(false);
         verify(sessionCache).getLocationsCountObservable();
-        verify(view).updateTrackingInformation(Mockito.any(SessionCacheImpl.class));
+        verify(view).updateTrackingInformation(Mockito.any(SessionCache.class));
         verifyNoMore();
     }
 
@@ -148,6 +148,7 @@ public class LocationPresenterTest {
         verify(prefs).putEmail("");
         verify(view).stopService();
         verify(sessionCache).drop();
+        verify(sessionCache).putStartTime(0);
         verify(authNetwork).logOut();
         verifyNoMore();
     }

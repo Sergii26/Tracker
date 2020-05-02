@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({InitialFragmentTest.class, AuthFragmentRegistrationModeTest.class, AuthFragmentLoginModeTest.class,
-        LocationFragmentTest.class, MapFragmentTest.class})
+@Suite.SuiteClasses({LocationFragmentTest.class, InitialFragmentTest.class, AuthFragmentRegistrationModeTest.class, AuthFragmentLoginModeTest.class,
+         MapFragmentTest.class})
 public class AndroidTestSuite {
 }

@@ -25,7 +25,7 @@ public class AuthFragmentRegistrationModeTest {
 
     @Test
     public void viewsAreShownTest(){
-        onView(allOf(withId(R.id.btnLogin), withText("Registration"))).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.btnLogin), withText(R.string.label_registration))).check(matches(isDisplayed()));
         onView(withId(R.id.etEmail)).check(matches(isDisplayed()));
         onView(withId(R.id.etPassword)).check(matches(isDisplayed()));
     }

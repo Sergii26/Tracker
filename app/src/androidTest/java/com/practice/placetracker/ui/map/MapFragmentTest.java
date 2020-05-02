@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.practice.placetracker.R;
 import com.practice.placetracker.rule.OpenMapFragmentTestRule;
 
 import org.junit.Before;
@@ -75,7 +76,7 @@ public class MapFragmentTest {
 
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         //find marker
-        UiObject mMarker1 = device.findObject(new UiSelector().descriptionContains("Last Location"));
+        UiObject mMarker1 = device.findObject(new UiSelector().descriptionContains(mActivityRule.getActivity().getString(R.string.marker_title)));
 
         int markerPositionX = 0;
         int markerPostionY = 0;

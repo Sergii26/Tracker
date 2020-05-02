@@ -10,6 +10,7 @@ import com.practice.placetracker.model.dao.map.MapDao;
 import com.practice.placetracker.model.dao.map.MapDaoWorker;
 import com.practice.placetracker.model.dao.map.MapDatabase;
 import com.practice.placetracker.model.logger.Logger;
+import com.practice.placetracker.model.network.Result;
 import com.practice.placetracker.model.network.auth.AuthNetwork;
 import com.practice.placetracker.model.network.auth.FirebaseAuthNetwork;
 import com.practice.placetracker.model.dao.MapDatabaseWorkerTest;
@@ -19,14 +20,15 @@ import com.practice.placetracker.model.prefs.Prefs;
 import com.practice.placetracker.model.prefs.PrefsImpl;
 import com.practice.placetracker.model.tracker.LocationClient;
 import com.practice.placetracker.model.tracker.LocationsSupplier;
-import com.practice.placetracker.model.use_case.SavedLocationsSender;
-import com.practice.placetracker.model.use_case.SendSavedLocationsUseCase;
+import com.practice.placetracker.model.use_case.sender.SendSavedLocationsUseCase;
+import com.practice.placetracker.model.use_case.UseCase;
 import com.practice.placetracker.service.LocationServicePresenter;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.reactivex.Observable;
 
 @Module
 public class AppTestModule {
@@ -84,7 +86,7 @@ public class AppTestModule {
     }
 
     @Provides
-    public SavedLocationsSender provideSendSaveLocationsUseCase(){
+    public UseCase<Void, Observable<Result<Boolean>>> provideSendSaveLocationsUseCase(){
         return new SendSavedLocationsUseCase(App.getInstance().getAppComponent().getLocationsNetwork(),
                 App.getInstance().getAppComponent().provideLocationDatabaseWorker(), Logger.withTag("MyLog"));
     }

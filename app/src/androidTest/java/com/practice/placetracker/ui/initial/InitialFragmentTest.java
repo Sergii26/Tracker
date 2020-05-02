@@ -30,14 +30,14 @@ public class InitialFragmentTest {
     @Test
     public void loginFragmentOpenedTest(){
         onView(ViewMatchers.withId(R.id.btnLoginFragment)).perform(click());
-        onView(allOf(withId(R.id.btnLogin), withText("Login")))
+        onView(allOf(withId(R.id.btnLogin), withText(R.string.label_login)))
                 .check(matches(isDisplayed()));
     }
 
     @Test
     public void registrationFragmentOpenedTest(){
         onView(ViewMatchers.withId(R.id.btnRegistrationFragment)).perform(click());
-        onView(allOf(withId(R.id.btnLogin), withText("Registration")))
+        onView(allOf(withId(R.id.btnLogin), withText(R.string.label_registration)))
                 .check(matches(isDisplayed()));
     }
 }
