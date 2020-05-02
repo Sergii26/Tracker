@@ -11,12 +11,12 @@ import com.practice.placetracker.App;
 import com.practice.placetracker.AppComponent;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
-import com.practice.placetracker.model.network.location.LocationsNetwork;
+import com.practice.placetracker.model.network.Result;
+import com.practice.placetracker.model.use_case.SavedLocationsSender;
+import com.practice.placetracker.model.use_case.SendSavedLocationsUseCase;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class ScheduledJobService extends JobService {
@@ -45,40 +45,16 @@ public class ScheduledJobService extends JobService {
     @Override
     public boolean onStartJob(JobParameters params) {
         logger.log("ScheduledJobService in onStartJob");
-        final AppComponent appComponent = App.getInstance().getAppComponent();
-        final LocationsNetwork locationsNetwork = appComponent.getLocationsNetwork();
-        disposables.add(Observable.just(appComponent.provideLocationDatabaseWorker())
+        final SavedLocationsSender sender = App.getInstance().getAppComponent().provideSendSaveLocationsUseCase();
+        disposables.add(sender.sendSavedLocations()
                 .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .doOnNext(worker -> logger.log("ScheduledSenderService in handleActionSendToDatabase"))
-                .flatMap(worker -> {
-                    return Observable.just(worker.getLocationsBySent(false))
-                            .doOnNext(locations -> logger.log("ScheduledSenderService in handleActionSendToDatabase DATABASE SIZE = " + locations.size()))
-                            .flatMap(locations -> Observable.fromIterable(locations))
-                            .flatMap(location -> locationsNetwork.sendLocation(location)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .doOnError(error -> {
-                                        logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + error.getMessage());
-                                        schedule(App.getInstance().getAppContext());
-                                    })
-                                    .flatMap(result -> {
-                                        if (result.isFail()) {
-                                            logger.log("ScheduledSenderService in handleActionSendToDatabase onFailure msg: " + result.getError().getMessage());
-                                            schedule(App.getInstance().getAppContext());
-                                            return Single.never();
-                                        } else {
-                                            logger.log("ScheduledSenderService in handleActionSendToDatabase onSuccess");
-                                            return worker.deleteLocation(location)
-                                                    .subscribeOn(Schedulers.io())
-                                                    .observeOn(AndroidSchedulers.mainThread())
-                                                    .doOnComplete(() -> logger.log("ScheduledSenderService delete location - success"))
-                                                    .doOnError(throwable -> logger.log("ScheduledSenderService delete location - failure" + throwable.getMessage()))
-                                                    .toSingleDefault(new Object()); // completable - to single
-                                        }
-                                    }).toObservable());
-                })
-                .subscribe());
+                .subscribe(booleanResult -> {
+                    logger.log("ScheduledJobService in onStartJob result: " + booleanResult.getData());
+                    if(!booleanResult.getData()){
+                        schedule(App.getInstance().getAppContext());
+                    }
+                }, throwable -> logger.log("ScheduledJobService in onStartJob error: " + throwable.getMessage())));
+        logger.log("ScheduledJobService in onStartJob END METHOD ");
         return false;
     }
 

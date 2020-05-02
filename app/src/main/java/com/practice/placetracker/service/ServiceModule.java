@@ -21,8 +21,8 @@ public class ServiceModule {
     public LocationServiceContract.Presenter providePresenter() {
         final AppComponent appComponent = App.getInstance().getAppComponent();
         return new LocationServicePresenter(service, appComponent.getLocationsSupplier(),
-                new LocationDatabaseWorker(appComponent.getLocationDao(), Logger.withTag("MyLog")),
-                appComponent.getSessionCache(), appComponent.getPrefs(), appComponent.getLocationsNetwork());
+                new LocationDatabaseWorker(appComponent.getLocationDao().locationDao(), Logger.withTag("MyLog")),
+                appComponent.getSessionCache(), appComponent.getPrefs(), appComponent.getLocationsNetwork(), Logger.withTag("MyLog"));
     }
 }
 

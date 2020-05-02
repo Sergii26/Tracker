@@ -9,6 +9,7 @@ import com.practice.placetracker.model.network.auth.AuthNetwork;
 import com.practice.placetracker.model.network.location.LocationsNetwork;
 import com.practice.placetracker.model.prefs.Prefs;
 import com.practice.placetracker.model.tracker.LocationsSupplier;
+import com.practice.placetracker.model.use_case.SavedLocationsSender;
 import com.practice.placetracker.ui.map.map.MapFragmentModule;
 import com.practice.placetracker.ui.tracker.location.LocationFragmentModule;
 
@@ -41,6 +42,8 @@ public interface AppComponent {
     LocationDaoWorker provideLocationDatabaseWorker();
 
     MapDaoWorker provideMapDatabaseWorker();
+
+    SavedLocationsSender provideSendSaveLocationsUseCase();
 }
 
 

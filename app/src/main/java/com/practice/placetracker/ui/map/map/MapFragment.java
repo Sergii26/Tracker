@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,6 +26,7 @@ import com.google.android.gms.maps.model.CustomCap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.practice.placetracker.App;
 import com.practice.placetracker.R;
@@ -42,6 +44,7 @@ import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
@@ -108,7 +111,7 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
     @Override
     public void onPause() {
         logger.log("MapFragment in onPause()");
-        Objects.requireNonNull(getActivity()).unregisterReceiver(receiver);
+        requireActivity().unregisterReceiver(receiver);
         presenter.deleteMarker();
         presenter.setLastLocation(null);
         super.onPause();
@@ -151,7 +154,7 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
     public void initMap() {
         logger.log("MapFragment initMap()");
         try {
-            MapsInitializer.initialize(Objects.requireNonNull(getActivity()).getApplicationContext());
+            MapsInitializer.initialize(requireActivity().getApplicationContext());
         } catch (Exception e) {
             logger.log("MapFragment initMap ERROR = " + e.getMessage());
         }
@@ -179,12 +182,15 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
                     .add(new LatLng(locations.get(i + 1).getLatitude(), locations.get(i + 1).getLongitude()))
                     .startCap(cc)
                     .width(12);
-            googleMap.addPolyline(rectOptions);
+
+            Polyline polyline = googleMap.addPolyline(rectOptions);
+            polyline.setClickable(true);
         }
         TrackedLocationSchema lastLocation = locations.get(locations.size() - 1);
         presenter.setLastLocation(lastLocation);
         marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()))
                 .icon(BitmapDescriptorFactory.fromBitmap(getDrawableAsBitmap())));
+        marker.setTitle(getString(R.string.marker_title));
     }
 
     public void removeMarker(){
@@ -218,16 +224,22 @@ public class MapFragment extends MvpFragment<MapContract.Presenter, MapContract.
         logger.log("MapFragment onMapReady()");
         this.googleMap = googleMap;
         presenter.showLocations();
+
     }
 
     @Override
     public boolean isConnectedToNetwork() {
-        return AndroidUtil.isConnectedToNetwork(Objects.requireNonNull(getActivity()));
+        return AndroidUtil.isConnectedToNetwork(requireActivity());
     }
 
     public void registerReceiver(){
         IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-        Objects.requireNonNull(getActivity()).registerReceiver(receiver, filter);
+        requireActivity().registerReceiver(receiver, filter);
+    }
+
+    @VisibleForTesting
+    public MapView getMapView() {
+        return mapView;
     }
 
 }

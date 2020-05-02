@@ -13,6 +13,8 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Predicate;
 
 public class LocationPresenter extends MvpPresenter<LocationContract.View> implements LocationContract.Presenter {
 
@@ -23,7 +25,7 @@ public class LocationPresenter extends MvpPresenter<LocationContract.View> imple
 
     private Disposable timer = Disposables.disposed();
 
-    LocationPresenter(SessionCache sessionCache, AuthNetwork authNetwork, ILog logger, Prefs prefs) {
+    public LocationPresenter(SessionCache sessionCache, AuthNetwork authNetwork, ILog logger, Prefs prefs) {
         this.sessionCache = sessionCache;
         this.authNetwork = authNetwork;
         this.logger = logger;
@@ -67,13 +69,16 @@ public class LocationPresenter extends MvpPresenter<LocationContract.View> imple
         }
         timer = Observable.interval(0, 1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .filter(secondsFromStart -> hasView())
-                .subscribe(secondsFromStart -> {
-                    final long seconds = (System.currentTimeMillis() - sessionCache.getStartTime()) / 1000;
-                    final long minutes = seconds / 60;
-                    final long hours = minutes / 60;
-                    final String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes % 60, seconds % 60);
-                    view.setTime(time);
+                .filter(secondsFromStart -> LocationPresenter.this.hasView())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long secondsFromStart) throws Exception {
+                        final long seconds = (System.currentTimeMillis() - sessionCache.getStartTime()) / 1000;
+                        final long minutes = seconds / 60;
+                        final long hours = minutes / 60;
+                        final String time = String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes % 60, seconds % 60);
+                        view.setTime(time);
+                    }
                 });
     }
 
@@ -104,10 +109,12 @@ public class LocationPresenter extends MvpPresenter<LocationContract.View> imple
     @Override
     public void logOut() {
         logger.log("LocationPresenter in logOut()");
+        stopTimer();
         prefs.putEmail("");
         view.stopService();
         sessionCache.drop();
         authNetwork.logOut();
+
     }
 
     @Override

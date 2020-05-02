@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -23,9 +24,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
-
-
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -52,6 +58,8 @@ dependencies {
     implementation "com.jakewharton.rxbinding3:rxbinding:$rxbinding3@aar"
     implementation "com.jakewharton.rxbinding3:rxbinding-appcompat:$rxbinding3"
 
+    androidTestAnnotationProcessor 'com.google.dagger:dagger-compiler:2.20'
+
     implementation 'com.google.dagger:dagger-android:2.20'
     implementation 'com.google.dagger:dagger-android-support:2.20' // if you use the support libraries
     annotationProcessor 'com.google.dagger:dagger-android-processor:2.20'
@@ -64,7 +72,19 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
+    testImplementation 'androidx.test:core:1.2.0'
     testImplementation 'junit:junit:4.12'
+
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-contrib:3.0.2'
+
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
+
+    debugImplementation 'androidx.fragment:fragment-testing:1.2.4'
+
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 
 }
 

@@ -79,7 +79,7 @@ public class LocationFragment extends MvpFragment<LocationContract.Presenter, Lo
         DaggerLocationFragmentComponent.builder()
                 .locationFragmentModule(new LocationFragmentModule())
                 .build().injectLocationFragment(this);
-        registerReceiver();
+
     }
 
     @Nullable
@@ -100,7 +100,9 @@ public class LocationFragment extends MvpFragment<LocationContract.Presenter, Lo
     public void onStart() {
         super.onStart();
         logger.log("LocationFragment in onStart()");
+        registerReceiver();
         getPresenter().setupUiObservables();
+
     }
 
     @Override
@@ -113,7 +115,7 @@ public class LocationFragment extends MvpFragment<LocationContract.Presenter, Lo
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Objects.requireNonNull(getActivity()).unregisterReceiver(receiver);
+        requireActivity().unregisterReceiver(receiver);
     }
 
     @Override
@@ -199,17 +201,17 @@ public class LocationFragment extends MvpFragment<LocationContract.Presenter, Lo
 
     @Override
     public void startService() {
-        Objects.requireNonNull(getActivity()).startService(new Intent(getActivity(), LocationService.class));
+        requireActivity().startService(new Intent(getActivity(), LocationService.class));
     }
 
     @Override
     public void stopService() {
-        Objects.requireNonNull(getActivity()).stopService(new Intent(getActivity(), LocationService.class));
+        requireActivity().stopService(new Intent(getActivity(), LocationService.class));
     }
 
     public void registerReceiver(){
         IntentFilter filter = new IntentFilter(ACTION_INTERRUPT_SERVICE);
-        Objects.requireNonNull(getActivity()).registerReceiver(receiver, filter);
+        requireActivity().registerReceiver(receiver, filter);
     }
 
 }

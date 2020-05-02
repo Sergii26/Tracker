@@ -10,31 +10,31 @@ import io.reactivex.Completable;
 public class LocationDatabaseWorker implements LocationDaoWorker {
 
     private final ILog logger;
-    private final LocationDao database;
+    private final LocationRoomDao dao;
 
-    public LocationDatabaseWorker(LocationDao database, ILog logger) {
+    public LocationDatabaseWorker(LocationRoomDao dao, ILog logger) {
         this.logger = logger;
-        this.database = database;
+        this.dao = dao;
     }
 
     public List<TrackedLocationSchema> getAllLocations() {
         logger.log("DatabaseWorker in getAllLocations()");
-        return database.locationDao().getAllLocations();
+        return dao.getAllLocations();
     }
 
     public Completable insertLocation(TrackedLocationSchema location) {
         logger.log("DatabaseWorker in insertLocation()");
-        return database.locationDao().insertLocation(location);
+        return dao.insertLocation(location);
     }
 
     public Completable deleteLocation(TrackedLocationSchema location) {
         logger.log("DatabaseWorker in deleteLocation()");
-        return database.locationDao().deleteLocation(location);
+        return dao.deleteLocation(location);
     }
 
     public List<TrackedLocationSchema> getLocationsBySent(boolean isSent) {
         logger.log("DatabaseWorker in getLocationsBySent()");
-        return database.locationDao().getLocationsBySent(false);
+        return dao.getLocationsBySent(false);
     }
 
 }

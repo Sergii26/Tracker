@@ -15,11 +15,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class LocationServicePresenter implements LocationServiceContract.Presenter {
 
-    private final ILog logger = Logger.withTag("MyLog");
+    private final ILog logger;
 
     public static final long UPDATE_LOCATION_TIME = 1000 * 60 * 10;
     public static final float UPDATE_LOCATION_DISTANCE = 60;
@@ -33,13 +34,14 @@ public class LocationServicePresenter implements LocationServiceContract.Present
     private final LocationDatabaseWorker dbWorker;
 
     public LocationServicePresenter(LocationServiceContract.Service service, LocationsSupplier locationsSupplier,
-                                    LocationDatabaseWorker dbWorker, SessionCache sessionCache, Prefs prefs, LocationsNetwork network) {
+                                    LocationDatabaseWorker dbWorker, SessionCache sessionCache, Prefs prefs, LocationsNetwork network, ILog logger) {
         this.locationsSupplier = locationsSupplier;
         this.sessionCache = sessionCache;
         this.dbWorker = dbWorker;
         this.service = service;
         this.network = network;
         this.prefs = prefs;
+        this.logger = logger;
         sessionCache.drop();
     }
 
@@ -53,13 +55,10 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                         .observeOn(AndroidSchedulers.mainThread()),
 
                 locationsSupplier.getLocationsObservable(),
-                new BiFunction<String, TrackingResult, TrackedLocationSchema>() {
-                    @Override
-                    public TrackedLocationSchema apply(String email, TrackingResult locationResult) throws Exception {
-                        logger.log("LocationServicePresenter in onLocationResult() " + locationResult.getType());
-                        sessionCache.updateSession(locationResult.getType());
-                        return new TrackedLocationSchema(locationResult.getLocation(), false, email);
-                    }
+                (email, locationResult) -> {
+                    logger.log("LocationServicePresenter in onLocationResult() " + locationResult.getType());
+                    sessionCache.updateSession(locationResult.getType());
+                    return new TrackedLocationSchema(locationResult.getLocation(), false, email);
                 })
                 .subscribe(location -> {
                     if (service.isConnectedToNetwork()) {
@@ -70,7 +69,7 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                                 .subscribe(result -> {
                                     if (result.isFail()) {
                                         logger.log("LocationServicePresenter in onLocationResult() location sent - failure");
-                                        disposables.add(insertToDatabase(location));
+                                        disposables.add(LocationServicePresenter.this.insertToDatabase(location));
                                         service.scheduleJob();
                                     } else {
                                         logger.log("LocationServicePresenter in onLocationResult() location sent - success");
@@ -78,7 +77,7 @@ public class LocationServicePresenter implements LocationServiceContract.Present
                                 }));
                     } else {
                         logger.log("LocationServicePresenter in onLocationResult() - internet is not working");
-                        disposables.add(insertToDatabase(location));
+                        disposables.add(LocationServicePresenter.this.insertToDatabase(location));
                         service.scheduleJob();
                     }
                 }));

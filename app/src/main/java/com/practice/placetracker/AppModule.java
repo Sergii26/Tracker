@@ -19,6 +19,8 @@ import com.practice.placetracker.model.prefs.Prefs;
 import com.practice.placetracker.model.prefs.PrefsImpl;
 import com.practice.placetracker.model.tracker.LocationClient;
 import com.practice.placetracker.model.tracker.LocationsSupplier;
+import com.practice.placetracker.model.use_case.SavedLocationsSender;
+import com.practice.placetracker.model.use_case.SendSavedLocationsUseCase;
 import com.practice.placetracker.service.LocationServicePresenter;
 
 import javax.inject.Singleton;
@@ -72,13 +74,19 @@ public class AppModule {
     }
 
     @Provides
-    public LocationDaoWorker provideDatabaseWorker(){
-        return new LocationDatabaseWorker(App.getInstance().getAppComponent().getLocationDao(), Logger.withTag("MyLog"));
+    public LocationDaoWorker provideLocationDatabaseWorker(){
+        return new LocationDatabaseWorker(App.getInstance().getAppComponent().getLocationDao().locationDao(), Logger.withTag("MyLog"));
     }
 
     @Provides
     public MapDaoWorker provideMapDatabaseWorker(){
-        return new MapDatabaseWorker(App.getInstance().getAppComponent().getMapDao(), Logger.withTag("MyLog"));
+        return new MapDatabaseWorker(App.getInstance().getAppComponent().getMapDao().mapDao(), Logger.withTag("MyLog"));
+    }
+
+    @Provides
+    public SavedLocationsSender provideSendSaveLocationsUseCase(){
+        return new SendSavedLocationsUseCase(App.getInstance().getAppComponent().getLocationsNetwork(),
+                App.getInstance().getAppComponent().provideLocationDatabaseWorker(), Logger.withTag("MyLog"));
     }
 }
 

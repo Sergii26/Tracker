@@ -6,7 +6,7 @@ public class TrackingResult {
     private final String type;
     private final Location location;
 
-    TrackingResult(String type, Location location) {
+    public TrackingResult(String type, Location location) {
         this.type = type;
         this.location = location;
     }

@@ -107,8 +107,6 @@ public class AuthFragment extends MvpFragment<AuthContract.Presenter, AuthContra
     @Override
     public void openLocationFragment() {
         logger.log("AuthFragment in openLocationFragment()");
-        // keyboard closing is replaced to onClick method
-
         if (hasCallBack()) {
             getCallBack().showLocationFragment();
         }

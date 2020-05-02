@@ -32,7 +32,6 @@ public class FirebaseLocationsNetwork implements LocationsNetwork {
 
     @Override
     public Single<Result<Boolean>> sendLocation(TrackedLocationSchema location) {
-
         return Single.just(firebase.collection(location.getUserEmail())
                 .add(location))
                 .map(task -> {

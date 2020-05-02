@@ -29,5 +29,7 @@
     <string name="betweenSymbol">-</string>
     <string name="tv_date_description">Click to set date</string>
     <string name="btnShow">Show</string>
+    <string name="dialog_message">Sign in</string>
+    <string name="marker_title">Last location</string>
 
 </resources>

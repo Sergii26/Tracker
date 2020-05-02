@@ -3,6 +3,8 @@ package com.practice.placetracker.ui.map;
 import android.os.Bundle;
 import android.view.Menu;
 
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.practice.placetracker.R;
 import com.practice.placetracker.model.logger.ILog;
 import com.practice.placetracker.model.logger.Logger;
@@ -16,6 +18,7 @@ import com.practice.placetracker.ui.map.map.MapContract;
 import com.practice.placetracker.ui.map.map.MapFragment;
 import com.practice.placetracker.ui.progress.ProgressDialogWrapper;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentManager;
 
 public class MainActivity extends HostActivity implements InitialContract.Host,

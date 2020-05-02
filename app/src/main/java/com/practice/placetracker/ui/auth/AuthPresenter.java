@@ -12,6 +12,10 @@ import com.practice.placetracker.ui.arch.MvpPresenter;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
 public class AuthPresenter extends MvpPresenter<AuthContract.View> implements AuthContract.Presenter {
@@ -45,7 +49,7 @@ public class AuthPresenter extends MvpPresenter<AuthContract.View> implements Au
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnSubscribe(disposable -> {
                         if (hasView()) {
-                            view.showProgress();
+                            view.showProgress("", view.getString(R.string.dialog_message));
                         }
                     })
                     .doFinally(() -> {
@@ -56,7 +60,7 @@ public class AuthPresenter extends MvpPresenter<AuthContract.View> implements Au
                     .filter(result -> hasView())
                     .subscribe(result -> {
                         if (result.isFail()) {
-                            view.showToast(view.getString(R.string.sign_in_or_registration_error));
+                            view.showToast(R.string.sign_in_or_registration_error);
                         } else {
                             prefs.putEmail(email);
                             view.openLocationFragment();
@@ -75,23 +79,51 @@ public class AuthPresenter extends MvpPresenter<AuthContract.View> implements Au
 
         onStopDisposable.add(Observable.combineLatest(
                 view.getPasswordObservable()
-                        .map(password -> password.length() >= 6 ? Optional.<String>absent() : Optional.fromNullable(view.getString(R.string.password_too_short)))
-                        .doOnNext(optional -> {
-                            if (hasView()) {
-                                view.setPasswordError(optional.isPresent() ? optional.get() : null);
+                        .map(new Function<String, Optional<String>>() {
+                            @Override
+                            public Optional<String> apply(String password) throws Exception {
+                                return password.length() >= 6 ? Optional.<String>absent() : Optional.fromNullable(view.getString(R.string.password_too_short));
                             }
-                        }).map(optional -> !optional.isPresent()),
+                        })
+                        .doOnNext(new Consumer<Optional<String>>() {
+                            @Override
+                            public void accept(Optional<String> optional) throws Exception {
+                                if (AuthPresenter.this.hasView()) {
+                                    view.setPasswordError(optional.isPresent() ? optional.get() : null);
+                                }
+                            }
+                        }).map(new Function<Optional<String>, Boolean>() {
+                    @Override
+                    public Boolean apply(Optional<String> optional) throws Exception {
+                        return !optional.isPresent();
+                    }
+                }),
                 view.getEmailObservable()
                         .map(email -> {
                             if (hasView()) {
-                                final String errorMsg = TextUtils.isEmpty(email) ? view.getString(R.string.username_is_empty) : null;
+                                final String errorMsg = email.isEmpty() ? view.getString(R.string.username_is_empty) : null;
                                 view.setUsernameError(errorMsg);
                             }
-                            return !TextUtils.isEmpty(email);
+                            return !email.isEmpty();
                         }),
-                (isPasswordValid, isEmailValid) -> isEmailValid && isPasswordValid)
-                .filter(isParamsValid -> hasView())
-                .subscribe(isParamsValid -> view.sentRequestButtonEnabled(isParamsValid)));
+                new BiFunction<Boolean, Boolean, Boolean>() {
+                    @Override
+                    public Boolean apply(Boolean isPasswordValid, Boolean isEmailValid) throws Exception {
+                        return isEmailValid && isPasswordValid;
+                    }
+                })
+                .filter(new Predicate<Boolean>() {
+                    @Override
+                    public boolean test(Boolean isParamsValid) throws Exception {
+                        return AuthPresenter.this.hasView();
+                    }
+                })
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean isParamsValid) throws Exception {
+                        view.sentRequestButtonEnabled(isParamsValid);
+                    }
+                }));
     }
 }
 

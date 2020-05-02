@@ -5,34 +5,32 @@ import com.practice.placetracker.model.dao.TrackedLocationSchema;
 import com.practice.placetracker.model.logger.ILog;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
 
 public class MapDatabaseWorker implements MapDaoWorker {
     private final ILog logger;
-    private final MapDao database;
+    private final MapRoomDao dao;
 
-    public MapDatabaseWorker(MapDao database, ILog logger) {
+    public MapDatabaseWorker(MapRoomDao dao, ILog logger) {
         this.logger = logger;
-        this.database = database;
+        this.dao = dao;
     }
 
     public Single<List<TrackedLocationSchema>> getAllUserLocations(String userEmail) {
         logger.log("MapDatabaseWorker getAllUserLocations()");
-        return Single.fromCallable(() -> database.mapDao().getAllUserLocations(userEmail));
+        return Single.fromCallable(() -> dao.getAllUserLocations(userEmail));
     }
 
     public Completable insertLocation(List<TrackedLocationSchema> locations) {
         logger.log("MapDatabaseWorker insertLocations()");
-        return database.mapDao().insertLocation(locations);
+        return dao.insertLocation(locations);
     }
 
     public Single<Optional<TrackedLocationSchema>> getLastLocation(String userEmail) {
         logger.log("MapDatabaseWorker getLastLocation()");
-        return Single.fromCallable(() -> database.mapDao().getLastLocation(userEmail))
+        return Single.fromCallable(() -> dao.getLastLocation(userEmail))
                 .map(trackedLocationSchemas -> {
                     if (trackedLocationSchemas.isEmpty()) {
                         return Optional.absent();
